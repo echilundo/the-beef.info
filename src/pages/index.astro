@@ -4,7 +4,6 @@ import PageLayout from "@layouts/PageLayout.astro";
 import Container from "@components/Container.astro";
 import { formatDate } from "@lib/utils"; // Ensure this is correctly imported
 import { WORK } from "@consts";
-import {YouTube} from 'astro-lazy-youtube-embed';
 
 const collection = (await getCollection("work"))
   .sort((a, b) => new Date(a.data.dateStart).valueOf() - new Date(b.data.dateStart).valueOf());
@@ -23,7 +22,8 @@ const work = await Promise.all(
       <div class="animate font-semibold text-black dark:text-white">
         Timeline
       </div>
-      <p>Welcome to the Greatest Beef Saga in Hip-Hop History.
+      <p>Y’all niggas was hungry, here’s the beef 🥩
+        <br> The full timeline of the greatest beef saga in hip-hop.
         <br> If this timeline is missing something, <a href="https://twitter.com/toolroom_knight">DM me on Twitter</a>.
         <br> This page might take a while to load. Will probably optimize more later.
       </p>

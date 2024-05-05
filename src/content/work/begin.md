@@ -9,4 +9,9 @@ Pusha T, before stepping into the solo spotlight, was one half of the hip-hop du
 
 The Neptunes were never compensated for their production work on the Birdman track. This financial oversight caused Pharrell to cut off professional ties with Birdman's label, Cash Money Records (CMR). So, when Wayne, a staple of CMR, later approached Pharrell to request some gear from his Billionaire Boys Club line, Pharrell turned him down flat, underscoring the rift.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/MsmjxbhrdVg?si=v2nrzcsq3d32cFYs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/MsmjxbhrdVg?si=v2nrzcsq3d32cFYs" title="YouTube video player" loading="lazy" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+<lite-youtube videoid="DHjqpvDnNGE">
+  <a href="https://www.youtube.com/watch?v=DHjqpvDnNGE" 
+	title="Play Video">Play JavaScript in 100 Seconds</a>
+</lite-youtube>
