@@ -9,7 +9,7 @@ export default defineConfig({
   site: "https://astro-nano-demo.vercel.app",
   integrations: [mdx(), sitemap(), tailwind()],
   output: "hybrid",
-  adapter: netlify(
+  adapter: netlify({
     cacheOnDemandPages: true,
-  )
+  })
 });
