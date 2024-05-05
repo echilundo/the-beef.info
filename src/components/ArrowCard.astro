@@ -1,7 +1,14 @@
 ---
-import type { Props } from "@types";
+// Importing the type for a collection entry from 'astro:content'
+import type { CollectionEntry } from "astro:content";
 
-const { entry }: { entry: Props } = Astro.props;
+// Define the type for Props to expect a collection entry from "work"
+type Props = {
+  entry: CollectionEntry<"work">;
+}
+
+// Destructuring entry from Astro.props
+const { entry } = Astro.props;
 ---
 
 <a href={`/${entry.collection}/${entry.slug}`} class="relative group flex flex-nowrap py-3 px-4 pr-10 rounded-lg border border-black/15 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white transition-colors duration-300 ease-in-out">
