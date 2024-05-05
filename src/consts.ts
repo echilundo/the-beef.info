@@ -1,8 +1,7 @@
-import type { Site, Metadata, Socials } from "@types";
+import type { Site, Metadata, Social } from "@types";
 
 export const SITE: Site = {
   NAME: "The Beef",
-  EMAIL: "",
 };
 
 export const HOME: Metadata = {
@@ -15,7 +14,7 @@ export const WORK: Metadata = {
   DESCRIPTION: "A timeline of the events.",
 };
 
-export const SOCIALS: Socials = [
+export const SOCIALS: Social[] = [
   { 
     NAME: "twitter-x",
     HREF: "https://twitter.com/toolroom_knight",
