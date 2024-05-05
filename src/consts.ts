@@ -1,7 +1,11 @@
-import type { Site, Metadata, Social } from "@types";
+import type { Site, Metadata } from "@types";
 
 export const SITE: Site = {
   NAME: "The Beef",
+  EMAIL: "", // Add the missing EMAIL property
+  NUM_POSTS_ON_HOMEPAGE: 5, // Add the missing properties
+  NUM_WORKS_ON_HOMEPAGE: 5, // Add the missing properties
+  NUM_PROJECTS_ON_HOMEPAGE: 5, // Add the missing properties
 };
 
 export const HOME: Metadata = {

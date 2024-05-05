@@ -1,4 +1,5 @@
-import { getCollection, CollectionEntry } from "astro:content";
+---
+import { type CollectionEntry, getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import Container from "@components/Container.astro";
 import FormattedDate from "@components/FormattedDate.astro";
@@ -6,28 +7,19 @@ import { readingTime } from "@lib/utils";
 import BackToPrev from "@components/BackToPrev.astro";
 
 export async function getStaticPaths() {
-  const posts: CollectionEntry<"blog">[] = (await getCollection("blog"))
-    .filter((post) => !post.data.draft)
-    .sort((a, b) => b.data.date.localeCompare(a.data.date));
-  return {
-    paths: posts.map((post) => ({
-      params: { slug: post.slug },
-    })),
-    fallback: false,
-  };
+  const posts = (await getCollection("blog"))
+    .filter(post => !post.data.draft)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: post,
+  }));
 }
+type Props = CollectionEntry<"blog">;
 
-type Props = {
-  data: {
-    title: string;
-    description: string;
-    date: string; // Assuming date is a string
-  };
-  body: string;
-};
-
-const post: Props = Astro.props;
+const post = Astro.props;
 const { Content } = await post.render();
+---
 
 <PageLayout title={post.data.title} description={post.data.description}>
   <Container>
@@ -54,4 +46,4 @@ const { Content } = await post.render();
       <Content />
     </article>
   </Container>
-</PageLayout>;
+</PageLayout>
