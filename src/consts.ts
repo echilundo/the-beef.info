@@ -17,10 +17,3 @@ export const WORK: Metadata = {
   TITLE: "Timeline",
   DESCRIPTION: "A timeline of the events.",
 };
-
-export const SOCIALS: Social[] = [
-  { 
-    NAME: "twitter-x",
-    HREF: "https://twitter.com/toolroom_knight",
-  }
-];
