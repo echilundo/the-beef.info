@@ -6,34 +6,16 @@ type Context = {
   site: string
 };
 
-type WorkItem = {
-  data: {
-    draft?: boolean;
-    date: Date | string;  // Assuming date can be either Date object or string
-    title: string;
-    description: string;
-    slug: string;
-    collection: string;  // Typically, this would be 'work'
-  }
-};
-
-type RSSFeedItem = {
-  title: string;
-  description: string;
-  pubDate: Date;
-  link: string;
-};
-
 export async function GET(context: Context) {
-  const workItems = await getCollection<WorkItem>("work");
+  const workItems = await getCollection("work");
 
-  const items: RSSFeedItem[] = workItems
-    .filter(item => !item.data.draft)  // Filter out drafts
-    .sort((a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf())  // Sort by date
-    .map((item) => ({  // Map to RSS feed item format
-      title: item.data.title,
-      description: item.data.description,
-      pubDate: new Date(item.data.date),  // Ensure date is a Date object
+  const items = workItems
+    .filter(item => !(item.data as any).draft)  // Temporarily casting to 'any' to bypass type checking; fix with proper type if 'draft' exists
+    .sort((a, b) => new Date((a.data as any).dateStart).valueOf() - new Date((b.data as any).dateStart).valueOf())
+    .map(item => ({
+      title: `${item.data.role} at ${item.data.company}`,
+      description: `Role: ${item.data.role}, Company: ${item.data.company}`,
+      pubDate: new Date(item.data.dateStart),
       link: `/${item.collection}/${item.slug}/`,
     }));
 

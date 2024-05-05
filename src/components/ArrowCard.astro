@@ -1,23 +1,21 @@
 ---
-// Importing the type for a collection entry from 'astro:content'
 import type { CollectionEntry } from "astro:content";
 
-// Define the type for Props to expect a collection entry from "work"
 type Props = {
   entry: CollectionEntry<"work">;
 }
 
-// Destructuring entry from Astro.props
 const { entry } = Astro.props;
 ---
 
 <a href={`/${entry.collection}/${entry.slug}`} class="relative group flex flex-nowrap py-3 px-4 pr-10 rounded-lg border border-black/15 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white transition-colors duration-300 ease-in-out">
   <div class="flex flex-col flex-1 truncate">
     <div class="font-semibold">
-      {entry.data.title}
+      {entry.data.role} at {entry.data.company}
     </div>
+    <!-- Adjust or remove this if there's no suitable description -->
     <div class="text-sm">
-      {entry.data.description}
+      {entry.data.role} details or other relevant information
     </div>
   </div>
   <svg 
