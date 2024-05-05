@@ -7,13 +7,12 @@ type Context = {
 }
 
 export async function GET(context: Context) {
-  const blog = (await getCollection("blog"))
-  .filter(post => !post.data.draft);
+  // Fetch the 'work' collection and filter out drafts
+  const work = (await getCollection("work"))
+    .filter(item => !item.data.draft);
 
-  const projects = (await getCollection("projects"))
-    .filter(project => !project.data.draft);
-
-  const items = [...blog, ...projects]
+  // Since we are now only pulling from 'work', no need to merge arrays
+  const items = work
     .sort((a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf());
 
   return rss({

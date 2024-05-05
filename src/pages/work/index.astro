@@ -2,11 +2,11 @@
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import Container from "@components/Container.astro";
-import { dateRange } from "@lib/utils";
+import { formatDate } from "@lib/utils"; // Ensure this is correctly imported
 import { WORK } from "@consts";
 
 const collection = (await getCollection("work"))
-  .sort((a, b) => new Date(b.data.dateStart).valueOf() - new Date(a.data.dateStart).valueOf());
+  .sort((a, b) => new Date(a.data.dateStart).valueOf() - new Date(b.data.dateStart).valueOf());
 
 const work = await Promise.all(
   collection.map(async (item) => {
@@ -20,32 +20,27 @@ const work = await Promise.all(
   <Container>
     <div class="space-y-10">
       <div class="animate font-semibold text-black dark:text-white">
-        Work
+        Timeline
       </div>
-      <ul class="flex flex-col space-y-4">
-        { 
-          work.map(entry => (
-            <li class="animate">
-              <div class="text-sm opacity-75">
-                {dateRange(entry.data.dateStart, entry.data.dateEnd)}
-              </div>
-              <div class="font-semibold text-black dark:text-white">
-                {entry.data.company}
-              </div>
-              <div class="text-sm opacity-75">
-                {entry.data.role}
-              </div>
-              <article>
-                <entry.Content />
-              </article>
-            </li>
-          ))
-        }
+      <ul class="flex flex-col space-y-12">
+        {work.map((entry, index) => (
+          <li class="animate">
+            <div class="text-sm opacity-75">
+              {formatDate(new Date(entry.data.dateStart))}  <!-- Ensure conversion to Date object -->
+            </div>
+            <div class="font-semibold text-black dark:text-white">
+              {entry.data.company}
+            </div>
+            <div class="text-sm opacity-75">
+              {entry.data.role}
+            </div>
+            <article class="mb-8"> <!-- Increased bottom margin for the article -->
+              <entry.Content />
+            </article>
+            {index !== work.length - 1 && <hr class="mt-14 border-t border-gray-200"/>} <!-- Increased margin-top for the hr element -->
+          </li>
+        ))}
       </ul>
-<!-- 
-      <ul class="animate flex flex-col gap-4">
-
-      </ul> -->
     </div>
   </Container>
 </PageLayout>
