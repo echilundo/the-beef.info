@@ -1,8 +1,8 @@
 ---
 company: "Champagne Moments"
 role: "Rick Ross"
-dateStart: "04/15/2014"
-dateEnd: "04/15/2014"
+dateStart: "04/15/2024"
+dateEnd: "04/15/2024"
 ---
 
 Rick Ross fires back, and the birth of a new meme.

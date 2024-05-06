@@ -1,10 +1,12 @@
 ---
+// Import statements for Astro functionality
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import Container from "@components/Container.astro";
 import { formatDate } from "@lib/utils"; // Ensure this is correctly imported
 import { WORK } from "@consts";
 
+// Load the collection data and prepare it for rendering
 const collection = (await getCollection("work"))
   .sort((a, b) => new Date(a.data.dateStart).valueOf() - new Date(b.data.dateStart).valueOf());
 
@@ -14,6 +16,10 @@ const work = await Promise.all(
     return { ...item, Content };
   })
 );
+
+// Import lazysizes for client-side lazy loading
+import 'lazysizes';
+import 'lazysizes/plugins/attrchange/ls.attrchange';
 ---
 
 <PageLayout title={WORK.TITLE} description={WORK.DESCRIPTION}>
@@ -22,7 +28,8 @@ const work = await Promise.all(
       <div class="animate font-semibold text-black dark:text-white">
         Timeline
       </div>
-      <p>Y’all niggas was hungry, here’s the beef 🥩
+      <p>
+        Y’all niggas was hungry, here’s the beef 🥩
         <br> The full timeline of the greatest beef saga in hip-hop.
         <br> If this timeline is missing something, <a href="https://twitter.com/toolroom_knight">DM me on Twitter</a>.
         <br> This page might take a while to load. Will probably optimize more later.
