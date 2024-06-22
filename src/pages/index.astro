@@ -45,7 +45,7 @@ import 'lazysizes/plugins/attrchange/ls.attrchange';
       </p>
       <ul class="flex flex-col space-y-12">
         {work.map((entry, index) => (
-          <li class="animate" key={entry.slug}>
+          <li class="animate">
             <div class="text-sm opacity-75">
               {formatDate(new Date(entry.data.dateStart))} <!-- Ensure conversion to Date object -->
             </div>
