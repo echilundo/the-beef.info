@@ -28,24 +28,15 @@ const { title, description } = Astro.props;
     <script>
       window.addEventListener('scroll', function() {
         const backToTopButton = document.getElementById('backToTop');
-        const lastUpdateButton = document.getElementById('lastUpdate');
         const footer = document.querySelector('footer');
         
-        if (backToTopButton && lastUpdateButton && footer) {
+        if (backToTopButton && footer) {
           const footerPosition = footer.getBoundingClientRect().top + window.scrollY;
 
-          // Toggle back to top button visibility
           if (window.scrollY > 200 && window.scrollY + window.innerHeight < footerPosition) {
             backToTopButton.classList.remove('hidden');
           } else {
             backToTopButton.classList.add('hidden');
-          }
-
-          // Toggle last update button visibility
-          if (window.scrollY + window.innerHeight >= footerPosition) {
-            lastUpdateButton.classList.add('hidden');
-          } else {
-            lastUpdateButton.classList.remove('hidden');
           }
         }
       });
@@ -54,9 +45,12 @@ const { title, description } = Astro.props;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
-      document.getElementById('lastUpdate')?.addEventListener('click', function() {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      });
+      const lastUpdateButton = document.getElementById('lastUpdate');
+      if (lastUpdateButton) {
+        lastUpdateButton.addEventListener('click', function() {
+          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        });
+      }
     </script>
   </body>
 </html>
