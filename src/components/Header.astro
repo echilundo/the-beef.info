@@ -78,13 +78,13 @@ import { SITE } from "@consts";
     const header = document.getElementById('header');
 
     window.addEventListener('scroll', () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
       if (scrollTop > lastScrollTop) {
         // Downscroll
-        header.classList.add('hide');
+        header?.classList.add('hide');
       } else {
         // Upscroll
-        header.classList.remove('hide');
+        header?.classList.remove('hide');
       }
       lastScrollTop = scrollTop;
     });
