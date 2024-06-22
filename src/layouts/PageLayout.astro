@@ -23,5 +23,33 @@ const { title, description } = Astro.props;
       <slot />
     </main>
     <Footer />
+    <button id="backToTop" class="fixed bottom-5 right-5 p-3 bg-black text-white rounded-full hidden">Back to Top</button>
+    <button id="lastUpdate" class="fixed bottom-20 right-5 p-3 bg-red-500 text-white rounded-full">Last Update</button>
+    <script>
+      window.addEventListener('scroll', function() {
+        const backToTopButton = document.getElementById('backToTop');
+        const footer = document.querySelector('footer');
+        const footerPosition = footer.getBoundingClientRect().top + window.scrollY;
+        
+        if (window.scrollY > 200 && window.scrollY + window.innerHeight < footerPosition) {
+          backToTopButton.classList.remove('hidden');
+        } else {
+          backToTopButton.classList.add('hidden');
+        }
+      });
+
+      document.getElementById('backToTop').addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      document.getElementById('lastUpdate').addEventListener('click', function() {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      });
+
+      // Hide the last update button after the first click
+      document.getElementById('lastUpdate').addEventListener('click', function() {
+        this.classList.add('hidden');
+      });
+    </script>
   </body>
 </html>
