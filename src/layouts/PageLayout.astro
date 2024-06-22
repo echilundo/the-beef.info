@@ -50,11 +50,6 @@ const { title, description } = Astro.props;
         lastUpdateButton.addEventListener('click', function() {
           window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         });
-
-        // Hide the last update button after the first click
-        lastUpdateButton.addEventListener('click', function() {
-          this.classList.add('hidden');
-        });
       }
     </script>
   </body>
