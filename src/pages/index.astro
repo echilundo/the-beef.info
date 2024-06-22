@@ -8,14 +8,10 @@ import { WORK } from "@consts";
 // Load the collection data and prepare it for rendering
 const collection = await getCollection("work");
 
-// Sort the collection first by date, then by the order field
+// Sort the collection by date
 const sortedCollection = collection.sort((a, b) => {
   const dateA = new Date(a.data.dateStart).valueOf();
   const dateB = new Date(b.data.dateStart).valueOf();
-
-  if (dateA === dateB) {
-    return (a.data.order || 0) - (b.data.order || 0);
-  }
   return dateA - dateB;
 });
 
