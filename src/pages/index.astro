@@ -1,17 +1,26 @@
 ---
-// Import statements for Astro functionality
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import Container from "@components/Container.astro";
-import { formatDate } from "@lib/utils"; // Ensure this is correctly imported
+import { formatDate } from "@lib/utils";
 import { WORK } from "@consts";
 
 // Load the collection data and prepare it for rendering
-const collection = (await getCollection("work"))
-  .sort((a, b) => new Date(a.data.dateStart).valueOf() - new Date(b.data.dateStart).valueOf());
+const collection = await getCollection("work");
+
+// Sort the collection first by date, then by the order field
+const sortedCollection = collection.sort((a, b) => {
+  const dateA = new Date(a.data.dateStart).valueOf();
+  const dateB = new Date(b.data.dateStart).valueOf();
+
+  if (dateA === dateB) {
+    return (a.data.order || 0) - (b.data.order || 0);
+  }
+  return dateA - dateB;
+});
 
 const work = await Promise.all(
-  collection.map(async (item) => {
+  sortedCollection.map(async (item) => {
     const { Content } = await item.render();
     return { ...item, Content };
   })
@@ -32,13 +41,13 @@ import 'lazysizes/plugins/attrchange/ls.attrchange';
         Y’all niggas was hungry, here’s the beef 🥩
         <br> The full timeline of the greatest beef saga in hip-hop.
         <br> If this timeline is missing something, <a href="https://twitter.com/toolroom_knight">DM me on Twitter</a>.
-        <br> This page might take a while to load. Will probably optimize more later.
+        <br> This page might take a while to load. It is also not mobile optimized yet.
       </p>
       <ul class="flex flex-col space-y-12">
         {work.map((entry, index) => (
-          <li class="animate">
+          <li class="animate" key={entry.slug}>
             <div class="text-sm opacity-75">
-              {formatDate(new Date(entry.data.dateStart))}  <!-- Ensure conversion to Date object -->
+              {formatDate(new Date(entry.data.dateStart))} <!-- Ensure conversion to Date object -->
             </div>
             <div class="font-semibold text-black dark:text-white">
               {entry.data.company}

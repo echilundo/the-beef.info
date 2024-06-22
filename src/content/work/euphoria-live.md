@@ -3,6 +3,7 @@ company: "euphoria"
 role: "Kendrick Lamar"
 dateStart: "06/19/2024"
 dateEnd: "06/19/2024"
+order: 1
 ---
 
 Kendrick kicks off his set at The Pop Out with a tone-setting song.

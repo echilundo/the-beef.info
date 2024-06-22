@@ -3,6 +3,7 @@ company: "6:16 in LA (Live)"
 role: "Kendrick Lamar"
 dateStart: "06/19/2024"
 dateEnd: "06/19/2024"
+order: 2
 ---
 
 Kendrick debuts 6:16 live, featuring ad-libs by Ab-Soul.
