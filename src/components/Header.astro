@@ -4,7 +4,7 @@ import Link from "@components/Link.astro";
 import { SITE } from "@consts";
 ---
 
-<header>
+<header id="header">
   <Container>
     <div class="flex flex-wrap gap-y-2 justify-between items-center">
       <Link href="/" underline={false}>
@@ -64,4 +64,29 @@ import { SITE } from "@consts";
       </div>
     </div>
   </Container>
+  <style>
+    #header {
+      transition: transform 0.3s ease-in-out;
+    }
+
+    #header.hide {
+      transform: translateY(-100%);
+    }
+  </style>
+  <script>
+    let lastScrollTop = 0;
+    const header = document.getElementById('header');
+
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollTop > lastScrollTop) {
+        // Downscroll
+        header.classList.add('hide');
+      } else {
+        // Upscroll
+        header.classList.remove('hide');
+      }
+      lastScrollTop = scrollTop;
+    });
+  </script>
 </header>
