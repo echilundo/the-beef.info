@@ -28,15 +28,25 @@ const { title, description } = Astro.props;
     <script>
       window.addEventListener('scroll', function() {
         const backToTopButton = document.getElementById('backToTop');
+        const lastUpdateButton = document.getElementById('lastUpdate');
         const footer = document.querySelector('footer');
         
-        if (backToTopButton && footer) {
+        if (backToTopButton && footer && lastUpdateButton) {
           const footerPosition = footer.getBoundingClientRect().top + window.scrollY;
+          const threshold = 100; // Adjust this value if needed
 
+          // Show/hide back to top button
           if (window.scrollY > 200 && window.scrollY + window.innerHeight < footerPosition) {
             backToTopButton.classList.remove('hidden');
           } else {
             backToTopButton.classList.add('hidden');
+          }
+
+          // Show/hide last update button
+          if (window.scrollY + window.innerHeight >= footerPosition - threshold) {
+            lastUpdateButton.classList.add('hidden');
+          } else {
+            lastUpdateButton.classList.remove('hidden');
           }
         }
       });
@@ -45,12 +55,9 @@ const { title, description } = Astro.props;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
-      const lastUpdateButton = document.getElementById('lastUpdate');
-      if (lastUpdateButton) {
-        lastUpdateButton.addEventListener('click', function() {
-          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        });
-      }
+      document.getElementById('lastUpdate')?.addEventListener('click', function() {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      });
     </script>
   </body>
 </html>
