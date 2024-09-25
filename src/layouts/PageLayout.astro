@@ -16,8 +16,14 @@ const { title, description } = Astro.props;
 <html lang="en">
   <head>
     <Head title={`${title} | ${SITE.NAME}`} description={description} />
+    <!-- Include the script here -->
+    <script
+      async
+      src="https://cdn.seline.so/seline.js"
+      data-token="3e7a569e0f2bcad"
+    ></script>
   </head>
-  <body>
+  <body class="bg-stone-100 dark:bg-stone-900 text-black dark:text-white">
     <Header />
     <main>
       <slot />
@@ -26,6 +32,33 @@ const { title, description } = Astro.props;
     <button id="backToTop" class="fixed bottom-5 right-5 p-3 bg-black text-white rounded-full hidden">Back to Top</button>
     <button id="lastUpdate" class="fixed bottom-20 right-5 p-3 bg-red-500 text-white rounded-full">Last Update</button>
     <script>
+      // Ensure correct initial theme
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.classList.add(theme);
+
+      // Function to switch to light theme
+      function switchToLightTheme() {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+
+      // Function to switch to dark theme
+      function switchToDarkTheme() {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      }
+
+      // Add event listeners to all light theme buttons
+      document.querySelectorAll('.light-theme-button').forEach(button => {
+        button.addEventListener('click', switchToLightTheme);
+      });
+
+      // Add event listeners to all dark theme buttons
+      document.querySelectorAll('.dark-theme-button').forEach(button => {
+        button.addEventListener('click', switchToDarkTheme);
+      });
+
+      // Scroll event handling
       window.addEventListener('scroll', function() {
         const backToTopButton = document.getElementById('backToTop');
         const lastUpdateButton = document.getElementById('lastUpdate');
@@ -51,10 +84,12 @@ const { title, description } = Astro.props;
         }
       });
 
+      // Back to Top button functionality
       document.getElementById('backToTop')?.addEventListener('click', function() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
+      // Last Update button functionality
       document.getElementById('lastUpdate')?.addEventListener('click', function() {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       });

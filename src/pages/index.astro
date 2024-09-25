@@ -19,9 +19,9 @@ const work = await Promise.all(
 <PageLayout title={WORK.TITLE} description={WORK.DESCRIPTION}>
   <Container>
     <div class="space-y-10">
-      <div class="animate font-semibold text-white">
+      <div class="animate font-semibold text-black dark:text-white">
         Timeline
-      </div>
+      </div>      
       <p>
         The full timeline of the greatest beef 🥩 saga in hip-hop.
         <br> If this timeline is missing something, <a href="https://twitter.com/toolroom_knight">DM me on Twitter</a>.
@@ -30,19 +30,19 @@ const work = await Promise.all(
       <ul class="flex flex-col space-y-12">
         {work.map((entry, index) => (
           <li class="animate">
-            <div class="text-sm opacity-75 text-gray-400">
-              {formatDate(new Date(entry.data.dateStart))}  <!-- Ensure conversion to Date object -->
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+              {formatDate(new Date(entry.data.dateStart))}
             </div>
-            <div class="font-semibold text-white">
+            <div class="font-semibold text-black dark:text-white">
               {entry.data.company}
             </div>
-            <div class="text-sm opacity-75 text-gray-400">
+            <div class="text-sm text-gray-600 dark:text-gray-400">
               {entry.data.role}
             </div>
             <article class="mb-8">
               <entry.Content />
             </article>
-            {index !== work.length - 1 && <hr class="mt-14 border-t border-gray-200"/>} <!-- Increased margin-top for the hr element -->
+            {index !== work.length - 1 && <hr class="mt-14 border-t border-gray-300 dark:border-gray-700"/>} <!-- Increased margin-top for the hr element -->
           </li>
         ))}
       </ul>

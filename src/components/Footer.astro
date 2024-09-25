@@ -3,7 +3,6 @@ import Container from "@components/Container.astro";
 import { SITE } from "@consts";
 import BackToTop from "@components/BackToTop.astro";
 ---
-
 <footer class="animate">
   <Container>
     <div class="relative">
@@ -16,11 +15,12 @@ import BackToTop from "@components/BackToTop.astro";
         &copy; 2024 {`|`} {SITE.NAME}
       </div>
       <div class="flex flex-wrap gap-1 items-center">
+        <!-- Light Theme Button -->
         <button
-          id="light-theme-button"
           aria-label="Light theme"
-          class="group size-8 flex items-center justify-center rounded-full"
+          class="group size-8 flex items-center justify-center rounded-full light-theme-button"
         >
+          <!-- SVG Icon for Light Theme -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18"
@@ -44,11 +44,12 @@ import BackToTop from "@components/BackToTop.astro";
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
           </svg>
         </button>
+        <!-- Dark Theme Button -->
         <button
-          id="dark-theme-button"
           aria-label="Dark theme"
-          class="group size-8 flex items-center justify-center rounded-full"
+          class="group size-8 flex items-center justify-center rounded-full dark-theme-button"
         >
+          <!-- SVG Icon for Dark Theme -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18"
