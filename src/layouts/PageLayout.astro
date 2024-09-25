@@ -4,11 +4,6 @@ import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
 import { SITE } from "@consts";
 
-type Props = {
-  title: string;
-  description: string;
-};
-
 const { title, description } = Astro.props;
 ---
 
@@ -16,12 +11,10 @@ const { title, description } = Astro.props;
 <html lang="en">
   <head>
     <Head title={`${title} | ${SITE.NAME}`} description={description} />
-    <!-- Include the script here -->
-    <script
-      async
-      src="https://cdn.seline.so/seline.js"
-      data-token="3e7a569e0f2bcad"
-    ></script>
+    <!-- Deferred third-party scripts -->
+    <script src="https://platform.twitter.com/widgets.js" defer></script>
+    <script src="https://connect.soundcloud.com/sdk/sdk-3.3.2.js" defer></script>
+    <!-- Include other deferred scripts as needed -->
   </head>
   <body class="bg-stone-100 dark:bg-stone-900 text-black dark:text-white">
     <Header />
@@ -29,70 +22,126 @@ const { title, description } = Astro.props;
       <slot />
     </main>
     <Footer />
-    <button id="backToTop" class="fixed bottom-5 right-5 p-3 bg-black text-white rounded-full hidden">Back to Top</button>
-    <button id="lastUpdate" class="fixed bottom-20 right-5 p-3 bg-red-500 text-white rounded-full">Last Update</button>
-    <script>
-      // Ensure correct initial theme
-      const theme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.classList.add(theme);
 
-      // Function to switch to light theme
-      function switchToLightTheme() {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      }
+    <!-- Back to Top and Last Update Buttons -->
+    <button
+      id="backToTop"
+      class="fixed bottom-5 right-5 p-3 bg-black text-white rounded-full hidden"
+    >
+      Back to Top
+    </button>
+    <button
+      id="lastUpdate"
+      class="fixed bottom-20 right-5 p-3 bg-red-700 text-white rounded-full"
+    >
+      Last Update
+    </button>
 
-      // Function to switch to dark theme
-      function switchToDarkTheme() {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      }
+    <!-- Inline Script -->
+    <script is:inline>
+      (function() {
+        // Ensure correct initial theme
+        const theme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.classList.add(theme);
 
-      // Add event listeners to all light theme buttons
-      document.querySelectorAll('.light-theme-button').forEach(button => {
-        button.addEventListener('click', switchToLightTheme);
-      });
-
-      // Add event listeners to all dark theme buttons
-      document.querySelectorAll('.dark-theme-button').forEach(button => {
-        button.addEventListener('click', switchToDarkTheme);
-      });
-
-      // Scroll event handling
-      window.addEventListener('scroll', function() {
-        const backToTopButton = document.getElementById('backToTop');
-        const lastUpdateButton = document.getElementById('lastUpdate');
-        const footer = document.querySelector('footer');
-        
-        if (backToTopButton && footer && lastUpdateButton) {
-          const footerPosition = footer.getBoundingClientRect().top + window.scrollY;
-          const threshold = 100; // Adjust this value if needed
-
-          // Show/hide back to top button
-          if (window.scrollY > 200 && window.scrollY + window.innerHeight < footerPosition) {
-            backToTopButton.classList.remove('hidden');
-          } else {
-            backToTopButton.classList.add('hidden');
-          }
-
-          // Show/hide last update button
-          if (window.scrollY + window.innerHeight >= footerPosition - threshold) {
-            lastUpdateButton.classList.add('hidden');
-          } else {
-            lastUpdateButton.classList.remove('hidden');
-          }
+        // Function to switch to light theme
+        function switchToLightTheme() {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
         }
-      });
 
-      // Back to Top button functionality
-      document.getElementById('backToTop')?.addEventListener('click', function() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
+        // Function to switch to dark theme
+        function switchToDarkTheme() {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        }
 
-      // Last Update button functionality
-      document.getElementById('lastUpdate')?.addEventListener('click', function() {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      });
+        // Wait for DOM content to be loaded
+        document.addEventListener('DOMContentLoaded', function() {
+          // Add event listeners to all light theme buttons
+          var lightButtons = document.querySelectorAll('.light-theme-button');
+          lightButtons.forEach(function(button) {
+            button.addEventListener('click', switchToLightTheme);
+          });
+
+          // Add event listeners to all dark theme buttons
+          var darkButtons = document.querySelectorAll('.dark-theme-button');
+          darkButtons.forEach(function(button) {
+            button.addEventListener('click', switchToDarkTheme);
+          });
+
+          // Scroll event handling with passive listener
+          window.addEventListener('scroll', function() {
+            var backToTopButton = document.getElementById('backToTop');
+            var lastUpdateButton = document.getElementById('lastUpdate');
+            var footer = document.querySelector('footer');
+
+            if (backToTopButton && lastUpdateButton && footer) {
+              var footerPosition = footer.getBoundingClientRect().top + window.scrollY;
+              var threshold = 100; // Adjust this value if needed
+
+              // Show/hide back to top button
+              if (
+                window.scrollY > 200 &&
+                window.scrollY + window.innerHeight < footerPosition
+              ) {
+                backToTopButton.classList.remove('hidden');
+              } else {
+                backToTopButton.classList.add('hidden');
+              }
+
+              // Show/hide last update button
+              if (window.scrollY + window.innerHeight >= footerPosition - threshold) {
+                lastUpdateButton.classList.add('hidden');
+              } else {
+                lastUpdateButton.classList.remove('hidden');
+              }
+            }
+          }, { passive: true });
+
+          // Back to Top button functionality
+          var backToTopButton = document.getElementById('backToTop');
+          if (backToTopButton) {
+            backToTopButton.addEventListener('click', function() {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+          }
+
+          // Last Update button functionality
+          var lastUpdateButton = document.getElementById('lastUpdate');
+          if (lastUpdateButton) {
+            lastUpdateButton.addEventListener('click', function() {
+              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            });
+          }
+
+          // Lazy loading for iframes
+          var lazyIframes = document.querySelectorAll('iframe.lazy-iframe');
+
+          if ('IntersectionObserver' in window) {
+            var lazyIframeObserver = new IntersectionObserver(function(entries) {
+              entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                  var iframe = entry.target;
+                  iframe.src = iframe.dataset.src || '';
+                  iframe.classList.remove('lazy-iframe');
+                  lazyIframeObserver.unobserve(iframe);
+                }
+              });
+            });
+
+            lazyIframes.forEach(function(iframe) {
+              lazyIframeObserver.observe(iframe);
+            });
+          } else {
+            // Fallback for browsers that do not support IntersectionObserver
+            lazyIframes.forEach(function(iframe) {
+              iframe.src = iframe.dataset.src || '';
+              iframe.classList.remove('lazy-iframe');
+            });
+          }
+        });
+      })();
     </script>
   </body>
 </html>
