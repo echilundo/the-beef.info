@@ -11,6 +11,24 @@ const { title, description } = Astro.props;
 <html lang="en">
   <head>
     <Head title={`${title} | ${SITE.NAME}`} description={description} />
+
+    <!-- Set initial theme early to prevent flash -->
+    <script is:inline>
+      (function() {
+        let theme = 'dark';
+        try {
+          theme = localStorage.getItem('theme') || 'dark';
+        } catch (e) {
+          console.warn('LocalStorage is not available; defaulting to dark theme.');
+        }
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+
     <!-- Deferred third-party scripts -->
     <script src="https://platform.twitter.com/widgets.js" defer></script>
     <script async src="https://cdn.seline.so/seline.js" data-token="3e7a569e0f2bcad"></script>
@@ -40,20 +58,24 @@ const { title, description } = Astro.props;
     <!-- Inline Script -->
     <script is:inline>
       (function() {
-        // Ensure correct initial theme
-        const theme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.classList.add(theme);
-
         // Function to switch to light theme
         function switchToLightTheme() {
           document.documentElement.classList.remove('dark');
-          localStorage.setItem('theme', 'light');
+          try {
+            localStorage.setItem('theme', 'light');
+          } catch (e) {
+            console.warn('Unable to save theme preference to localStorage.');
+          }
         }
 
         // Function to switch to dark theme
         function switchToDarkTheme() {
           document.documentElement.classList.add('dark');
-          localStorage.setItem('theme', 'dark');
+          try {
+            localStorage.setItem('theme', 'dark');
+          } catch (e) {
+            console.warn('Unable to save theme preference to localStorage.');
+          }
         }
 
         // Wait for DOM content to be loaded
@@ -62,12 +84,14 @@ const { title, description } = Astro.props;
           var lightButtons = document.querySelectorAll('.light-theme-button');
           lightButtons.forEach(function(button) {
             button.addEventListener('click', switchToLightTheme);
+            button.addEventListener('touchend', switchToLightTheme);
           });
 
           // Add event listeners to all dark theme buttons
           var darkButtons = document.querySelectorAll('.dark-theme-button');
           darkButtons.forEach(function(button) {
             button.addEventListener('click', switchToDarkTheme);
+            button.addEventListener('touchend', switchToDarkTheme);
           });
 
           // Scroll event handling with passive listener
@@ -105,12 +129,18 @@ const { title, description } = Astro.props;
             backToTopButton.addEventListener('click', function() {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             });
+            backToTopButton.addEventListener('touchend', function() {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
           }
 
           // Last Update button functionality
           var lastUpdateButton = document.getElementById('lastUpdate');
           if (lastUpdateButton) {
             lastUpdateButton.addEventListener('click', function() {
+              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            });
+            lastUpdateButton.addEventListener('touchend', function() {
               window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             });
           }
