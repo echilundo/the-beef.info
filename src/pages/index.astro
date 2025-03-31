@@ -21,28 +21,24 @@ const work = await Promise.all(
 <PageLayout title={WORK.TITLE} description={WORK.DESCRIPTION}>
   <Container>
     <div class="space-y-10">
-      <div class="animate font-semibold text-black dark:text-white">
+      <h1 class="font-semibold text-black dark:text-white text-2xl">
         Timeline
-      </div>      
-      <p>
-        The full timeline of the greatest beef 🥩 saga in hip-hop.
-        <br /> 
-        If this timeline is missing something, 
-        <a 
-          href="https://twitter.com/toolroom_knight"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="hover:underline"
-        >
-          DM me on Twitter
-          <span class="sr-only">(opens in new tab)</span>
-        </a>.
-        <br /> 
-        It's a heavy page, so please be patient.
-      </p>
-      <ul class="flex flex-col space-y-12" aria-label="Timeline of events">
+      </h1>      
+      <div class="prose dark:prose-invert">
+        <p class="text-lg font-medium">
+          The full timeline of the greatest beef 🥩 saga in hip-hop.
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 italic">
+          It's a heavy page, so please be patient.
+        </p>
+      </div>
+      
+      <ul 
+        class="flex flex-col space-y-12" 
+        aria-label="Timeline of events"
+      >
         {work.map((entry, index) => (
-          <li class="animate">
+          <li class="timeline-item opacity-0">
             <time 
               datetime={new Date(entry.data.dateStart).toISOString()}
               class="text-sm text-gray-600 dark:text-gray-400"
@@ -55,7 +51,9 @@ const work = await Promise.all(
             <div class="text-sm text-gray-600 dark:text-gray-400">
               {entry.data.role}
             </div>
-            <article class="mb-8">
+            <article 
+              class="mb-8 content-visibility-auto contain-intrinsic-size-[0_500px]"
+            >
               <entry.Content />
             </article>
             {index !== work.length - 1 && (
@@ -64,64 +62,61 @@ const work = await Promise.all(
           </li>
         ))}
       </ul>
-
-      {/* No JavaScript fallback */}
-      <noscript>
-        <style>
-          .animate {
-            opacity: 1 !important;
-            transform: none !important;
-          }
-        </style>
-      </noscript>
-
-      {/* Progressive enhancement styles */}
-      <style>
-        .animate {
-          opacity: 0;
-          transform: translateY(20px);
-          transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .animate.visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .animate {
-            transition: none;
-          }
-        }
-      </style>
-
-      {/* Intersection Observer for animations */}
-      <script>
-        if ('IntersectionObserver' in window) {
-          const observer = new IntersectionObserver(
-            (entries) => {
-              entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                  entry.target.classList.add('visible');
-                  observer.unobserve(entry.target);
-                }
-              });
-            },
-            {
-              threshold: 0.1,
-              rootMargin: '50px'
-            }
-          );
-
-          document.querySelectorAll('.animate').forEach(item => {
-            observer.observe(item);
-          });
-        } else {
-          document.querySelectorAll('.animate').forEach(item => {
-            item.classList.add('visible');
-          });
-        }
-      </script>
     </div>
   </Container>
 </PageLayout>
+
+<style>
+  .timeline-item {
+    transform: translateY(20px);
+    will-change: opacity, transform;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .timeline-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timeline-item {
+      transition: none;
+    }
+  }
+
+  article {
+    contain: content;
+  }
+</style>
+
+<script>
+  // Use requestIdleCallback for non-critical initialization
+  const initTimeline = () => {
+    const items = document.querySelectorAll('.timeline-item');
+    if (!items.length) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: '50px' }
+    );
+
+    items.forEach(item => io.observe(item));
+  };
+
+  // Initialize on page load
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(initTimeline);
+  } else {
+    setTimeout(initTimeline, 1);
+  }
+
+  // Re-initialize after Astro page transitions
+  document.addEventListener('astro:after-swap', initTimeline);
+</script>
