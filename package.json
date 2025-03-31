@@ -41,6 +41,7 @@
     "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
-    "@types/unist": "^3.0.3"
+    "@types/unist": "^3.0.3",
+    "terser": "^5.39.0"
   }
 }
