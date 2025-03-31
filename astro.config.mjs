@@ -11,5 +11,20 @@ export default defineConfig({
   output: "hybrid",
   adapter: netlify({
     cacheOnDemandPages: true,
+    compressHTML: true,
+    build: {
+      compress: true,
+      headers: {
+        "/*": {
+          "Cache-Control": "public, max-age=0, must-revalidate",
+        },
+        "/assets/*": {
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+        "/*.{js,css,svg,woff,woff2}": {
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      },
+    },
   })
 });
