@@ -8,7 +8,7 @@ import netlify from "@astrojs/netlify";
 export default defineConfig({
   site: "https://astro-nano-demo.vercel.app",
   integrations: [mdx(), sitemap(), tailwind()],
-  output: "hybrid",
+  output: "static",
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp'
