@@ -35,19 +35,18 @@ const { title, description } = Astro.props;
       /* Skip link styles */
       .skip-link {
         position: absolute;
-        top: 0;
+        top: -40px;
         left: 0;
-        width: 100%;
-        padding: 0.5rem;
         background: #000;
-        color: #fff;
-        text-align: center;
-        transform: translateY(-100%);
-        transition: transform 0.3s;
-        z-index: 9999;
+        color: white;
+        padding: 8px;
+        z-index: 100;
+        transform: translateY(0);
+        transition: transform 0.2s;
+        will-change: transform;
       }
       .skip-link:focus {
-        transform: translateY(0);
+        transform: translateY(40px);
       }
       
       /* Focus styles */
@@ -74,6 +73,36 @@ const { title, description } = Astro.props;
         body {
           background: white !important;
           color: black !important;
+        }
+      }
+
+      /* Composited animations for floating buttons */
+      .floating-button {
+        position: relative;
+        transform: translateY(20px) translateZ(0);
+        opacity: 0;
+        visibility: hidden;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform, opacity;
+        backface-visibility: hidden;
+        perspective: 1000px;
+      }
+
+      .floating-button.visible {
+        transform: translateY(0) translateZ(0);
+        opacity: 1;
+        visibility: visible;
+      }
+
+      @media (max-width: 640px) {
+        .floating-button span {
+          display: none;
+        }
+        .floating-button {
+          width: 3rem;
+          padding: 0;
+          justify-content: center;
         }
       }
     </style>
@@ -106,25 +135,52 @@ const { title, description } = Astro.props;
     </main>
     <Footer />
 
-    <!-- Back to Top and Last Update Buttons with improved accessibility -->
-    <button
-      id="backToTop"
-      class="fixed bottom-5 right-5 p-3 bg-black text-white rounded-full hidden transition-opacity duration-300 hover:opacity-80 focus:opacity-100 no-print"
-      aria-label="Back to top of page"
-      role="button"
-      tabindex="-1"
-      aria-hidden="true"
-    >
-      Back to Top
-    </button>
-    <button
-      id="lastUpdate"
-      class="fixed bottom-20 right-5 p-3 bg-red-700 text-white rounded-full transition-opacity duration-300 hover:opacity-80 focus:opacity-100 no-print"
-      aria-label="Jump to last update"
-      role="button"
-    >
-      Last Update
-    </button>
+    <!-- Fixed position container for floating buttons -->
+    <div class="fixed bottom-0 right-0 z-50 p-5 pointer-events-none">
+      <!-- Back to Top Button -->
+      <div class="mb-3">
+        <button
+          id="backToTop"
+          class="floating-button h-12 px-4 bg-black text-white rounded-full pointer-events-auto hover:opacity-80 focus:opacity-100 no-print flex items-center gap-2"
+          aria-label="Back to top of page"
+          role="button"
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            class="size-5"
+            stroke-width="2"
+          >
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+          <span class="text-sm whitespace-nowrap">Back to Top</span>
+        </button>
+      </div>
+
+      <!-- Last Update Button -->
+      <div>
+        <button
+          id="lastUpdate"
+          class="floating-button h-12 px-4 bg-red-700 text-white rounded-full pointer-events-auto hover:opacity-80 focus:opacity-100 no-print flex items-center gap-2"
+          aria-label="Jump to last update"
+          role="button"
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            class="size-5"
+            stroke-width="2"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+          <span class="text-sm whitespace-nowrap">Last Update</span>
+        </button>
+      </div>
+    </div>
 
     <!-- Error boundary -->
     <div id="error-boundary" class="hidden fixed inset-0 bg-red-100 dark:bg-red-900 p-4 z-50">
@@ -137,8 +193,12 @@ const { title, description } = Astro.props;
       </div>
     </div>
 
-    <!-- Loading indicator -->
-    <div id="loading-indicator" class="fixed top-0 left-0 w-full h-1 bg-blue-500 transform origin-left scale-x-0 transition-transform duration-300 z-50"></div>
+    <!-- Loading indicator with composited animation -->
+    <div 
+      id="loading-indicator" 
+      class="fixed top-0 left-0 w-full h-1 bg-blue-500 transform-gpu origin-left scale-x-0 transition-transform duration-300 z-50"
+      style="will-change: transform;"
+    ></div>
 
     <!-- Optimized Scripts -->
     <script>
@@ -193,147 +253,70 @@ const { title, description } = Astro.props;
         }
       };
 
-      // Debounce function for scroll events
-      function debounce(func: (...args: unknown[]) => void, wait: number): (...args: unknown[]) => void {
-        let timeout: NodeJS.Timeout | undefined;
-        return function executedFunction(...args: unknown[]): void {
-          const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-          };
-          clearTimeout(timeout);
-          timeout = setTimeout(later, wait);
-        };
-      }
-
-      // Theme management with system preference support
-      const ThemeManager = {
-        setTheme(theme: 'light' | 'dark'): void {
-          document.documentElement.classList.toggle('dark', theme === 'dark');
-          try {
-            localStorage.setItem('theme', theme);
-          } catch (e) {
-            console.warn('Theme preference save failed:', e);
-          }
-        },
-
-        init(): void {
-          // Listen for system theme changes
-          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('theme')) {
-              this.setTheme(e.matches ? 'dark' : 'light');
-            }
-          });
-
-          document.querySelectorAll('.light-theme-button').forEach(button => {
-            button.addEventListener('click', () => this.setTheme('light'));
-            button.addEventListener('touchend', () => this.setTheme('light'));
-          });
-
-          document.querySelectorAll('.dark-theme-button').forEach(button => {
-            button.addEventListener('click', () => this.setTheme('dark'));
-            button.addEventListener('touchend', () => this.setTheme('dark'));
-          });
+      // Use requestIdleCallback for non-critical operations
+      const scheduleIdleTask = (callback: () => void) => {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(callback, { timeout: 1000 });
+        } else {
+          setTimeout(callback, 1);
         }
       };
 
-      // Scroll management with improved performance
-      const ScrollManager = {
-        init(): void {
-          const backToTopButton = document.getElementById('backToTop');
-          const lastUpdateButton = document.getElementById('lastUpdate');
-          const footer = document.querySelector('footer');
+      // Optimized scroll handling with RAF
+      scheduleIdleTask(() => {
+        const backToTopButton = document.getElementById('backToTop');
+        const lastUpdateButton = document.getElementById('lastUpdate');
+        const footer = document.querySelector('footer');
 
-          if (!backToTopButton || !lastUpdateButton || !footer) return;
+        if (!backToTopButton || !lastUpdateButton || !footer) return;
 
-          // Use requestAnimationFrame for smooth scroll handling
-          let ticking = false;
-          const handleScroll = () => {
-            if (!ticking) {
-              window.requestAnimationFrame(() => {
-                const footerPosition = footer.getBoundingClientRect().top + window.scrollY;
-                const threshold = 100;
+        let ticking = false;
+        const handleScroll = () => {
+          if (!ticking) {
+            requestAnimationFrame(() => {
+              const scrollY = window.scrollY;
+              const viewportHeight = window.innerHeight;
+              const documentHeight = document.documentElement.scrollHeight;
+              const showThreshold = 200;
 
-                // Toggle back to top button
-                backToTopButton.classList.toggle('hidden', 
-                  window.scrollY <= 200 || 
-                  window.scrollY + window.innerHeight >= footerPosition
-                );
+              // Always show back to top button when scrolled down enough
+              backToTopButton.classList.toggle('visible', scrollY > showThreshold);
 
-                // Toggle last update button
-                lastUpdateButton.classList.toggle('hidden',
-                  window.scrollY + window.innerHeight >= footerPosition - threshold
-                );
+              // Show last update button except when at the very bottom
+              lastUpdateButton.classList.toggle('visible',
+                scrollY + viewportHeight < documentHeight - 20
+              );
 
-                // Update tabindex and aria-hidden for keyboard navigation
-                const isHidden = backToTopButton.classList.contains('hidden');
-                backToTopButton.tabIndex = isHidden ? -1 : 0;
-                backToTopButton.setAttribute('aria-hidden', String(isHidden));
-
-                ticking = false;
-              });
-              ticking = true;
-            }
-          };
-
-          window.addEventListener('scroll', handleScroll, { passive: true });
-
-          // Button event handlers with improved accessibility
-          backToTopButton.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            backToTopButton.blur();
-          });
-
-          lastUpdateButton.addEventListener('click', () => {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            lastUpdateButton.blur();
-          });
-        }
-      };
-
-      // Lazy loading for iframes with improved performance
-      const LazyLoadManager = {
-        init(): void {
-          const lazyIframes = document.querySelectorAll<HTMLIFrameElement>('iframe.lazy-iframe');
-          if (!lazyIframes.length) return;
-
-          if ('IntersectionObserver' in window) {
-            const observer = new IntersectionObserver(
-              (entries) => {
-                entries.forEach(entry => {
-                  if (entry.isIntersecting) {
-                    const iframe = entry.target as HTMLIFrameElement;
-                    iframe.src = iframe.dataset.src || '';
-                    iframe.classList.remove('lazy-iframe');
-                    observer.unobserve(iframe);
-                  }
-                });
-              },
-              { 
-                rootMargin: '50px',
-                threshold: 0.1
-              }
-            );
-
-            lazyIframes.forEach(iframe => observer.observe(iframe));
-          } else {
-            // Fallback for older browsers
-            lazyIframes.forEach(iframe => {
-              iframe.src = iframe.dataset.src || '';
-              iframe.classList.remove('lazy-iframe');
+              ticking = false;
             });
+            ticking = true;
           }
-        }
-      };
+        };
+
+        // Passive scroll listener
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        // Smooth scroll handlers
+        backToTopButton.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        lastUpdateButton.addEventListener('click', () => {
+          window.scrollTo({ 
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth'
+          });
+        });
+
+        // Initial check
+        handleScroll();
+      });
 
       // Initialize all managers when DOM is ready
       document.addEventListener('DOMContentLoaded', () => {
         PerformanceMonitor.init();
         ErrorHandler.init();
         LoadingIndicator.init();
-        ThemeManager.init();
-        ScrollManager.init();
-        LazyLoadManager.init();
       });
     </script>
   </body>
