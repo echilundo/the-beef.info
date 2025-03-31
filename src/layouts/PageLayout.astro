@@ -12,19 +12,84 @@ const { title, description } = Astro.props;
   <head>
     <Head title={`${title} | ${SITE.NAME}`} description={description} />
 
-    <!-- Set initial theme early to prevent flash -->
+    <!-- Resource hints for better performance -->
+    <link rel="preconnect" href="https://platform.twitter.com" />
+    <link rel="preconnect" href="https://cdn.seline.so" />
+    <link rel="preload" href="/fonts/your-main-font.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <!-- SEO Meta Tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content={description} />
+    <meta property="og:title" content={`${title} | ${SITE.NAME}`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.href} />
+    
+    <!-- Critical CSS -->
+    <style is:inline>
+      /* Prevent layout shift during theme initialization */
+      html { visibility: hidden; }
+      html.theme-loaded { visibility: visible; }
+      
+      /* Skip link styles */
+      .skip-link {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 0.5rem;
+        background: #000;
+        color: #fff;
+        text-align: center;
+        transform: translateY(-100%);
+        transition: transform 0.3s;
+        z-index: 9999;
+      }
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+      
+      /* Focus styles */
+      :focus-visible {
+        outline: 2px solid #4a90e2;
+        outline-offset: 2px;
+      }
+      
+      /* Reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
+      /* Print styles */
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+        body {
+          background: white !important;
+          color: black !important;
+        }
+      }
+    </style>
+
+    <!-- Theme initialization with improved error handling -->
     <script is:inline>
       (function() {
-        let theme = 'dark';
         try {
-          theme = localStorage.getItem('theme') || 'dark';
+          const theme = localStorage.getItem('theme') || 
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          document.documentElement.classList.add('theme-loaded');
         } catch (e) {
-          console.warn('LocalStorage is not available; defaulting to dark theme.');
-        }
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
+          console.warn('Theme initialization failed:', e);
+          document.documentElement.classList.add('dark', 'theme-loaded');
         }
       })();
     </script>
@@ -32,146 +97,246 @@ const { title, description } = Astro.props;
     <!-- Deferred third-party scripts -->
     <script src="https://platform.twitter.com/widgets.js" defer></script>
     <script async src="https://cdn.seline.so/seline.js" data-token="3e7a569e0f2bcad"></script>
-    <!-- Include other deferred scripts as needed -->
   </head>
   <body class="bg-stone-100 dark:bg-stone-900 text-black dark:text-white">
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <Header />
-    <main>
+    <main id="main-content">
       <slot />
     </main>
     <Footer />
 
-    <!-- Back to Top and Last Update Buttons -->
+    <!-- Back to Top and Last Update Buttons with improved accessibility -->
     <button
       id="backToTop"
-      class="fixed bottom-5 right-5 p-3 bg-black text-white rounded-full hidden"
+      class="fixed bottom-5 right-5 p-3 bg-black text-white rounded-full hidden transition-opacity duration-300 hover:opacity-80 focus:opacity-100 no-print"
+      aria-label="Back to top of page"
+      role="button"
+      tabindex="-1"
+      aria-hidden="true"
     >
       Back to Top
     </button>
     <button
       id="lastUpdate"
-      class="fixed bottom-20 right-5 p-3 bg-red-700 text-white rounded-full"
+      class="fixed bottom-20 right-5 p-3 bg-red-700 text-white rounded-full transition-opacity duration-300 hover:opacity-80 focus:opacity-100 no-print"
+      aria-label="Jump to last update"
+      role="button"
     >
       Last Update
     </button>
 
-    <!-- Inline Script -->
-    <script is:inline>
-      (function() {
-        // Function to switch to light theme
-        function switchToLightTheme() {
-          document.documentElement.classList.remove('dark');
-          try {
-            localStorage.setItem('theme', 'light');
-          } catch (e) {
-            console.warn('Unable to save theme preference to localStorage.');
+    <!-- Error boundary -->
+    <div id="error-boundary" class="hidden fixed inset-0 bg-red-100 dark:bg-red-900 p-4 z-50">
+      <div class="max-w-2xl mx-auto">
+        <h2 class="text-2xl font-bold mb-4">Something went wrong</h2>
+        <p class="mb-4">We're sorry, but there was an error loading this page. Please try refreshing.</p>
+        <button onclick="window.location.reload()" class="bg-red-600 text-white px-4 py-2 rounded">
+          Refresh Page
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading-indicator" class="fixed top-0 left-0 w-full h-1 bg-blue-500 transform origin-left scale-x-0 transition-transform duration-300 z-50"></div>
+
+    <!-- Optimized Scripts -->
+    <script>
+      // Performance monitoring
+      const PerformanceMonitor = {
+        init(): void {
+          if ('performance' in window) {
+            window.addEventListener('load', () => {
+              const entries = performance.getEntriesByType('navigation');
+              if (entries.length > 0) {
+                const timing = entries[0] as PerformanceNavigationTiming;
+                const loadTime = timing.loadEventEnd - timing.startTime;
+                console.log('Page load time:', loadTime);
+                // Send to analytics if needed
+              }
+            });
           }
         }
+      };
 
-        // Function to switch to dark theme
-        function switchToDarkTheme() {
-          document.documentElement.classList.add('dark');
-          try {
-            localStorage.setItem('theme', 'dark');
-          } catch (e) {
-            console.warn('Unable to save theme preference to localStorage.');
-          }
+      // Error handling
+      const ErrorHandler = {
+        init(): void {
+          window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            // Show error boundary
+            const errorBoundary = document.getElementById('error-boundary');
+            if (errorBoundary) errorBoundary.classList.remove('hidden');
+          });
+
+          window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+          });
         }
+      };
 
-        // Wait for DOM content to be loaded
-        document.addEventListener('DOMContentLoaded', function() {
-          // Add event listeners to all light theme buttons
-          var lightButtons = document.querySelectorAll('.light-theme-button');
-          lightButtons.forEach(function(button) {
-            button.addEventListener('click', switchToLightTheme);
-            button.addEventListener('touchend', switchToLightTheme);
+      // Loading indicator
+      const LoadingIndicator = {
+        init(): void {
+          const indicator = document.getElementById('loading-indicator');
+          if (!indicator) return;
+
+          // Show loading indicator on navigation
+          document.addEventListener('astro:page-load', () => {
+            indicator.classList.remove('scale-x-0');
           });
 
-          // Add event listeners to all dark theme buttons
-          var darkButtons = document.querySelectorAll('.dark-theme-button');
-          darkButtons.forEach(function(button) {
-            button.addEventListener('click', switchToDarkTheme);
-            button.addEventListener('touchend', switchToDarkTheme);
+          // Hide loading indicator when page is loaded
+          document.addEventListener('astro:after-swap', () => {
+            indicator.classList.add('scale-x-0');
           });
+        }
+      };
 
-          // Scroll event handling with passive listener
-          window.addEventListener('scroll', function() {
-            var backToTopButton = document.getElementById('backToTop');
-            var lastUpdateButton = document.getElementById('lastUpdate');
-            var footer = document.querySelector('footer');
+      // Debounce function for scroll events
+      function debounce(func: (...args: unknown[]) => void, wait: number): (...args: unknown[]) => void {
+        let timeout: NodeJS.Timeout | undefined;
+        return function executedFunction(...args: unknown[]): void {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
 
-            if (backToTopButton && lastUpdateButton && footer) {
-              var footerPosition = footer.getBoundingClientRect().top + window.scrollY;
-              var threshold = 100; // Adjust this value if needed
+      // Theme management with system preference support
+      const ThemeManager = {
+        setTheme(theme: 'light' | 'dark'): void {
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          try {
+            localStorage.setItem('theme', theme);
+          } catch (e) {
+            console.warn('Theme preference save failed:', e);
+          }
+        },
 
-              // Show/hide back to top button
-              if (
-                window.scrollY > 200 &&
-                window.scrollY + window.innerHeight < footerPosition
-              ) {
-                backToTopButton.classList.remove('hidden');
-              } else {
-                backToTopButton.classList.add('hidden');
-              }
-
-              // Show/hide last update button
-              if (window.scrollY + window.innerHeight >= footerPosition - threshold) {
-                lastUpdateButton.classList.add('hidden');
-              } else {
-                lastUpdateButton.classList.remove('hidden');
-              }
+        init(): void {
+          // Listen for system theme changes
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+              this.setTheme(e.matches ? 'dark' : 'light');
             }
-          }, { passive: true });
+          });
 
-          // Back to Top button functionality
-          var backToTopButton = document.getElementById('backToTop');
-          if (backToTopButton) {
-            backToTopButton.addEventListener('click', function() {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-            backToTopButton.addEventListener('touchend', function() {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-          }
+          document.querySelectorAll('.light-theme-button').forEach(button => {
+            button.addEventListener('click', () => this.setTheme('light'));
+            button.addEventListener('touchend', () => this.setTheme('light'));
+          });
 
-          // Last Update button functionality
-          var lastUpdateButton = document.getElementById('lastUpdate');
-          if (lastUpdateButton) {
-            lastUpdateButton.addEventListener('click', function() {
-              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            });
-            lastUpdateButton.addEventListener('touchend', function() {
-              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            });
-          }
+          document.querySelectorAll('.dark-theme-button').forEach(button => {
+            button.addEventListener('click', () => this.setTheme('dark'));
+            button.addEventListener('touchend', () => this.setTheme('dark'));
+          });
+        }
+      };
 
-          // Lazy loading for iframes
-          var lazyIframes = document.querySelectorAll('iframe.lazy-iframe');
+      // Scroll management with improved performance
+      const ScrollManager = {
+        init(): void {
+          const backToTopButton = document.getElementById('backToTop');
+          const lastUpdateButton = document.getElementById('lastUpdate');
+          const footer = document.querySelector('footer');
+
+          if (!backToTopButton || !lastUpdateButton || !footer) return;
+
+          // Use requestAnimationFrame for smooth scroll handling
+          let ticking = false;
+          const handleScroll = () => {
+            if (!ticking) {
+              window.requestAnimationFrame(() => {
+                const footerPosition = footer.getBoundingClientRect().top + window.scrollY;
+                const threshold = 100;
+
+                // Toggle back to top button
+                backToTopButton.classList.toggle('hidden', 
+                  window.scrollY <= 200 || 
+                  window.scrollY + window.innerHeight >= footerPosition
+                );
+
+                // Toggle last update button
+                lastUpdateButton.classList.toggle('hidden',
+                  window.scrollY + window.innerHeight >= footerPosition - threshold
+                );
+
+                // Update tabindex and aria-hidden for keyboard navigation
+                const isHidden = backToTopButton.classList.contains('hidden');
+                backToTopButton.tabIndex = isHidden ? -1 : 0;
+                backToTopButton.setAttribute('aria-hidden', String(isHidden));
+
+                ticking = false;
+              });
+              ticking = true;
+            }
+          };
+
+          window.addEventListener('scroll', handleScroll, { passive: true });
+
+          // Button event handlers with improved accessibility
+          backToTopButton.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            backToTopButton.blur();
+          });
+
+          lastUpdateButton.addEventListener('click', () => {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            lastUpdateButton.blur();
+          });
+        }
+      };
+
+      // Lazy loading for iframes with improved performance
+      const LazyLoadManager = {
+        init(): void {
+          const lazyIframes = document.querySelectorAll<HTMLIFrameElement>('iframe.lazy-iframe');
+          if (!lazyIframes.length) return;
 
           if ('IntersectionObserver' in window) {
-            var lazyIframeObserver = new IntersectionObserver(function(entries) {
-              entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                  var iframe = entry.target;
-                  iframe.src = iframe.dataset.src || '';
-                  iframe.classList.remove('lazy-iframe');
-                  lazyIframeObserver.unobserve(iframe);
-                }
-              });
-            });
+            const observer = new IntersectionObserver(
+              (entries) => {
+                entries.forEach(entry => {
+                  if (entry.isIntersecting) {
+                    const iframe = entry.target as HTMLIFrameElement;
+                    iframe.src = iframe.dataset.src || '';
+                    iframe.classList.remove('lazy-iframe');
+                    observer.unobserve(iframe);
+                  }
+                });
+              },
+              { 
+                rootMargin: '50px',
+                threshold: 0.1
+              }
+            );
 
-            lazyIframes.forEach(function(iframe) {
-              lazyIframeObserver.observe(iframe);
-            });
+            lazyIframes.forEach(iframe => observer.observe(iframe));
           } else {
-            // Fallback for browsers that do not support IntersectionObserver
-            lazyIframes.forEach(function(iframe) {
+            // Fallback for older browsers
+            lazyIframes.forEach(iframe => {
               iframe.src = iframe.dataset.src || '';
               iframe.classList.remove('lazy-iframe');
             });
           }
-        });
-      })();
+        }
+      };
+
+      // Initialize all managers when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        PerformanceMonitor.init();
+        ErrorHandler.init();
+        LoadingIndicator.init();
+        ThemeManager.init();
+        ScrollManager.init();
+        LazyLoadManager.init();
+      });
     </script>
   </body>
 </html>

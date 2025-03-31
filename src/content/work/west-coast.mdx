@@ -5,10 +5,26 @@ dateStart: "06/19/2024"
 dateEnd: "06/19/2024"
 ---
 
+import { Image } from 'astro:assets';
+
 📸: Armen Keleshian
 
-<img src="https://res.cloudinary.com/relentz3d/image/upload/t_relent/v1719058706/GQfbujuWYAAw-A8.jpg" alt="West Coast United" loading="lazy" />
+<Image 
+  src="https://res.cloudinary.com/relentz3d/image/upload/t_relent/v1719058706/GQfbujuWYAAw-A8.jpg"
+  alt="West Coast United"
+  width={800}
+  height={600}
+  loading="lazy"
+  format="webp"
+/>
 
-<img src="https://res.cloudinary.com/relentz3d/image/upload/v1720159618/nlu-poster-compressed.png" alt="West Coast United" loading="lazy" />
+<Image 
+  src="https://res.cloudinary.com/relentz3d/image/upload/v1720159618/nlu-poster-compressed.png"
+  alt="West Coast United"
+  width={800}
+  height={600}
+  loading="lazy"
+  format="webp"
+/>
 
 [Second Image Source](https://twitter.com/nfr_podcast/status/1808378153322033413)

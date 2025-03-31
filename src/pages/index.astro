@@ -2,12 +2,14 @@
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import Container from "@components/Container.astro";
-import { formatDate } from "@lib/utils"; // Ensure this is correctly imported
+import { formatDate } from "@lib/utils";
 import { WORK } from "@consts";
 
+// Pre-sort the collection during build time
 const collection = (await getCollection("work"))
   .sort((a, b) => new Date(a.data.dateStart).valueOf() - new Date(b.data.dateStart).valueOf());
 
+// Process content at build time
 const work = await Promise.all(
   collection.map(async (item) => {
     const { Content } = await item.render();
@@ -24,15 +26,29 @@ const work = await Promise.all(
       </div>      
       <p>
         The full timeline of the greatest beef 🥩 saga in hip-hop.
-        <br> If this timeline is missing something, <a href="https://twitter.com/toolroom_knight">DM me on Twitter</a>.
-        <br> It's a heavy page, so please be patient.
+        <br /> 
+        If this timeline is missing something, 
+        <a 
+          href="https://twitter.com/toolroom_knight"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:underline"
+        >
+          DM me on Twitter
+          <span class="sr-only">(opens in new tab)</span>
+        </a>.
+        <br /> 
+        It's a heavy page, so please be patient.
       </p>
-      <ul class="flex flex-col space-y-12">
+      <ul class="flex flex-col space-y-12" aria-label="Timeline of events">
         {work.map((entry, index) => (
           <li class="animate">
-            <div class="text-sm text-gray-600 dark:text-gray-400">
+            <time 
+              datetime={new Date(entry.data.dateStart).toISOString()}
+              class="text-sm text-gray-600 dark:text-gray-400"
+            >
               {formatDate(new Date(entry.data.dateStart))}
-            </div>
+            </time>
             <div class="font-semibold text-black dark:text-white">
               {entry.data.company}
             </div>
@@ -42,10 +58,70 @@ const work = await Promise.all(
             <article class="mb-8">
               <entry.Content />
             </article>
-            {index !== work.length - 1 && <hr class="mt-14 border-t border-gray-300 dark:border-gray-700"/>} <!-- Increased margin-top for the hr element -->
+            {index !== work.length - 1 && (
+              <hr class="mt-14 border-t border-gray-300 dark:border-gray-700" aria-hidden="true" />
+            )}
           </li>
         ))}
       </ul>
+
+      {/* No JavaScript fallback */}
+      <noscript>
+        <style>
+          .animate {
+            opacity: 1 !important;
+            transform: none !important;
+          }
+        </style>
+      </noscript>
+
+      {/* Progressive enhancement styles */}
+      <style>
+        .animate {
+          opacity: 0;
+          transform: translateY(20px);
+          transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .animate.visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .animate {
+            transition: none;
+          }
+        }
+      </style>
+
+      {/* Intersection Observer for animations */}
+      <script>
+        if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add('visible');
+                  observer.unobserve(entry.target);
+                }
+              });
+            },
+            {
+              threshold: 0.1,
+              rootMargin: '50px'
+            }
+          );
+
+          document.querySelectorAll('.animate').forEach(item => {
+            observer.observe(item);
+          });
+        } else {
+          document.querySelectorAll('.animate').forEach(item => {
+            item.classList.add('visible');
+          });
+        }
+      </script>
     </div>
   </Container>
 </PageLayout>

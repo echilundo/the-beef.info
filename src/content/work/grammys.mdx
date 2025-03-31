@@ -5,6 +5,8 @@ dateStart: "02/02/2025"
 dateEnd: "02/02/2025"
 ---
 
+import { Image } from 'astro:assets';
+
 Sweeping all 5 categories, he was nominated in.
 
 🎶 Best Rap Song
@@ -15,4 +17,11 @@ Sweeping all 5 categories, he was nominated in.
 
 📸: Frederic J Brown via UMG / Twitter
 
-<img src="https://res.cloudinary.com/relentz3d/image/upload/t_relent/1-2-3-4-5.jpeg" alt="A black man holding five grammny awards" loading="lazy" />
+<Image 
+  src="https://res.cloudinary.com/relentz3d/image/upload/t_relent/1-2-3-4-5.jpeg"
+  alt="A black man holding five grammny awards"
+  width={800}
+  height={600}
+  loading="lazy"
+  format="webp"
+/>
