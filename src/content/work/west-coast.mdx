@@ -10,12 +10,13 @@ import { Image } from 'astro:assets';
 📸: Armen Keleshian
 
 <Image 
-  src="https://res.cloudinary.com/relentz3d/image/upload/t_relent/v1719058706/GQfbujuWYAAw-A8.jpg"
+  src="https://res.cloudinary.com/relentz3d/image/upload/f_auto,q_auto,w_800/v1719058706/GQfbujuWYAAw-A8.jpg"
   alt="West Coast United"
   width={800}
   height={600}
-  loading="lazy"
-  format="webp"
+  loading="eager"
+  decoding="sync"
+  fetchpriority="high"
 />
 
 <Image 

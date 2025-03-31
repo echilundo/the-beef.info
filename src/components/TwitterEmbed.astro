@@ -1,0 +1,71 @@
+---
+import { getTweet } from '../lib/tweets';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+const tweet = await getTweet(id);
+
+// Only load Twitter widgets script if we have a video tweet
+const hasVideo = tweet.hasVideo;
+---
+
+{hasVideo ? (
+  <div class="twitter-embed-video">
+    <blockquote class="twitter-tweet" data-dnt="true">
+      <a href={`https://twitter.com/${tweet.authorUsername}/status/${tweet.id}`}></a>
+    </blockquote>
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  </div>
+) : (
+  <div class="twitter-embed not-prose rounded-lg border border-gray-200 dark:border-gray-800 p-4 my-4">
+    <div class="flex items-start gap-3">
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <span class="font-medium text-black dark:text-white">{tweet.author}</span>
+          <span class="text-gray-500">@{tweet.authorUsername}</span>
+        </div>
+        <div class="mt-2 text-black dark:text-white whitespace-pre-wrap">{tweet.text}</div>
+        <div class="mt-2">
+          <a 
+            href={`https://twitter.com/${tweet.authorUsername}/status/${tweet.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-sm text-blue-500 hover:underline"
+          >
+            {tweet.date}
+            <span class="sr-only">Opens in new tab</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .twitter-embed {
+    max-width: 550px;
+    margin-left: auto;
+    margin-right: auto;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .twitter-embed-video {
+    max-width: 550px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
+
+<script>
+  // Reinitialize Twitter embeds after client-side navigation
+  document.addEventListener('astro:page-load', () => {
+    // @ts-ignore
+    if (window.twttr) {
+      // @ts-ignore
+      window.twttr.widgets.load();
+    }
+  });
+</script> 
