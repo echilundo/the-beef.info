@@ -23,12 +23,16 @@ export default defineConfig({
     compressHTML: true,
     build: {
       compress: true,
-      inlineStylesheets: "auto",
+      inlineStylesheets: "always",
       minify: true,
       headers: {
         "/*": {
           "Cache-Control": "public, max-age=0, must-revalidate",
           "X-Content-Type-Options": "nosniff",
+          "X-Frame-Options": "DENY",
+          "X-XSS-Protection": "1; mode=block",
+          "Referrer-Policy": "strict-origin-when-cross-origin",
+          "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
         },
         "/assets/*": {
           "Cache-Control": "public, max-age=31536000, immutable",
@@ -43,9 +47,10 @@ export default defineConfig({
     },
   }),
   build: {
-    inlineStylesheets: 'auto',
+    inlineStylesheets: 'always',
     assets: 'assets',
     splitting: true,
+    prebuild: true,
   },
   vite: {
     build: {
@@ -56,6 +61,11 @@ export default defineConfig({
           drop_console: true,
           drop_debugger: true,
           pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
+          passes: 3,
+          unsafe_math: true,
+        },
+        mangle: {
+          toplevel: true,
         },
       },
       rollupOptions: {
@@ -66,13 +76,16 @@ export default defineConfig({
               './src/layouts/Layout.astro'
             ],
             'router': ['@astrojs/client-router'],
-          }
+          },
+          compact: true,
+          minifyInternalExports: true,
         }
       }
     },
     optimizeDeps: {
       include: ['@astrojs/client-router'],
       exclude: ['@astrojs/client-router/virtual'],
+      force: true,
     },
     ssr: {
       noExternal: ['@astrojs/client-router']
