@@ -7,65 +7,202 @@ interface Props {
 
 const { id } = Astro.props;
 const tweet = await getTweet(id);
-
-// Only load Twitter widgets script if we have a video tweet
 const hasVideo = tweet.hasVideo;
+
+// Format date for better performance (avoid client-side formatting)
+const formatDate = (dateStr: string) => {
+  try {
+    const date = new Date(dateStr);
+    return new Intl.DateTimeFormat('en-US', { 
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(date);
+  } catch (e) {
+    return dateStr;
+  }
+};
+
+const formattedDate = formatDate(tweet.date);
 ---
 
-{hasVideo ? (
-  <div class="twitter-embed-video">
-    <blockquote class="twitter-tweet" data-dnt="true">
-      <a href={`https://twitter.com/${tweet.authorUsername}/status/${tweet.id}`}></a>
-    </blockquote>
-    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-  </div>
-) : (
-  <div class="twitter-embed not-prose rounded-lg border border-gray-200 dark:border-gray-800 p-4 my-4">
-    <div class="flex items-start gap-3">
-      <div class="flex-1">
-        <div class="flex items-center gap-2">
-          <span class="font-medium text-black dark:text-white">{tweet.author}</span>
-          <span class="text-gray-500">@{tweet.authorUsername}</span>
-        </div>
-        <div class="mt-2 text-black dark:text-white whitespace-pre-wrap">{tweet.text}</div>
-        <div class="mt-2">
-          <a 
-            href={`https://twitter.com/${tweet.authorUsername}/status/${tweet.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-sm text-blue-500 hover:underline"
-          >
-            {tweet.date}
-            <span class="sr-only">Opens in new tab</span>
-          </a>
+<div class="tweet-embed">
+  {!hasVideo ? (
+    <div class="tweet-content">
+      <div class="flex items-start gap-3">
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-black dark:text-white">{tweet.author}</span>
+            <span class="text-gray-500">@{tweet.authorUsername}</span>
+          </div>
+          <div class="mt-2 text-black dark:text-white whitespace-pre-wrap">{tweet.text}</div>
+          <div class="mt-2">
+            <a 
+              href={`https://twitter.com/${tweet.authorUsername}/status/${tweet.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-sm text-blue-500 hover:underline"
+            >
+              {formattedDate}
+              <span class="sr-only">Opens in new tab</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-)}
+  ) : (
+    <div class="video-tweet-container" data-tweet-id={id}>
+      {/* Placeholder while tweet loads */}
+      <div class="tweet-placeholder">
+        <div class="flex items-start gap-3 animate-pulse">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-medium">{tweet.author}</span>
+              <span class="text-gray-500">@{tweet.authorUsername}</span>
+            </div>
+            <div class="mt-2 text-gray-500">Loading tweet...</div>
+            <div class="mt-4 bg-gray-200 dark:bg-gray-700 rounded-lg h-48 w-full"></div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Actual tweet embed - loaded lazily */}
+      <div class="tweet-embed-container hidden">
+        <blockquote class="twitter-tweet" data-dnt="true">
+          <a href={`https://twitter.com/${tweet.authorUsername}/status/${id}`}></a>
+        </blockquote>
+      </div>
+    </div>
+  )}
+</div>
 
 <style>
-  .twitter-embed {
+  .tweet-embed {
     max-width: 550px;
     margin-left: auto;
     margin-right: auto;
     background: rgba(255, 255, 255, 0.05);
   }
-  
-  .twitter-embed-video {
-    max-width: 550px;
-    margin-left: auto;
-    margin-right: auto;
+
+  .video-tweet-container {
+    position: relative;
+    min-height: 250px;
+  }
+
+  .tweet-placeholder {
+    padding: 1rem;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  /* Optimize paint performance */
+  .tweet-embed-container {
+    contain: content;
+    content-visibility: auto;
   }
 </style>
 
 <script>
-  // Reinitialize Twitter embeds after client-side navigation
-  document.addEventListener('astro:page-load', () => {
-    // @ts-ignore
-    if (window.twttr) {
-      // @ts-ignore
-      window.twttr.widgets.load();
+  interface TwitterWidgets {
+    load(element?: Element): Promise<void>;
+  }
+
+  interface Twitter {
+    widgets?: TwitterWidgets;
+  }
+
+  declare global {
+    interface Window {
+      twttr?: Twitter;
     }
+  }
+
+  let scriptLoading = false;
+  let scriptLoaded = false;
+
+  const loadTwitterScript = async () => {
+    if (scriptLoading || scriptLoaded) return;
+    
+    scriptLoading = true;
+    const script = document.createElement('script');
+    script.src = 'https://platform.twitter.com/widgets.js';
+    script.async = true;
+    
+    return new Promise((resolve, reject) => {
+      script.onload = () => {
+        scriptLoaded = true;
+        scriptLoading = false;
+        resolve(true);
+      };
+      script.onerror = () => {
+        scriptLoading = false;
+        reject(new Error('Failed to load Twitter script'));
+      };
+      document.head.appendChild(script);
+    });
+  };
+
+  const loadTweet = async (container: Element) => {
+    try {
+      await loadTwitterScript();
+      
+      const placeholder = container.querySelector('.tweet-placeholder');
+      const embedContainer = container.querySelector('.tweet-embed-container');
+      
+      if (window.twttr?.widgets && embedContainer) {
+        embedContainer.classList.remove('hidden');
+        await window.twttr.widgets.load(embedContainer);
+        placeholder?.remove();
+      }
+    } catch (error) {
+      console.error('Error loading tweet:', error);
+      // Show error state in placeholder
+      const placeholder = container.querySelector('.tweet-placeholder');
+      if (placeholder) {
+        placeholder.innerHTML = `
+          <div class="text-red-500">
+            Failed to load tweet. 
+            <a href="https://twitter.com/status/${container.getAttribute('data-tweet-id')}" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="underline">
+              View on Twitter
+            </a>
+          </div>
+        `;
+      }
+    }
+  };
+
+  // Use Intersection Observer for lazy loading
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        loadTweet(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    rootMargin: '50px' // Start loading slightly before the tweet comes into view
+  });
+
+  // Observe all video tweet containers
+  document.querySelectorAll('.video-tweet-container').forEach(container => {
+    observer.observe(container);
   });
 </script> 
