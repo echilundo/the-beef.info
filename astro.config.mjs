@@ -63,32 +63,50 @@ export default defineConfig({
           pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
           passes: 3,
           unsafe_math: true,
+          unsafe_comps: true,
+          unsafe_Function: true,
+          unsafe_arrows: true,
         },
         mangle: {
           toplevel: true,
+          properties: {
+            regex: /^_/
+          }
         },
+        format: {
+          comments: false,
+        }
       },
       rollupOptions: {
         output: {
-          manualChunks: {
-            'critical': [
-              './src/components/Head.astro',
-              './src/layouts/Layout.astro'
-            ],
-            'router': ['@astrojs/client-router'],
+          manualChunks: (id) => {
+            // Separate vendor chunks for better caching
+            if (id.includes('node_modules')) {
+              if (id.includes('astro')) {
+                return 'astro';
+              }
+              if (id.includes('tailwind')) {
+                return 'tailwind';
+              }
+              return 'vendor';
+            }
           },
           compact: true,
           minifyInternalExports: true,
         }
+      },
+      chunkSizeWarningLimit: 1000,
+      target: 'esnext',
+      modulePreload: {
+        polyfill: false
       }
     },
     optimizeDeps: {
-      include: ['@astrojs/client-router'],
-      exclude: ['@astrojs/client-router/virtual'],
+      include: ['astro:transitions'],
       force: true,
     },
     ssr: {
-      noExternal: ['@astrojs/client-router']
+      noExternal: ['astro:transitions']
     }
   }
 });

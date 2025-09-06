@@ -1,0 +1,78 @@
+---
+interface Props {
+  links?: Array<{
+    href: string;
+    text: string;
+  }>;
+}
+
+const defaultLinks = [
+  { href: "#main-content", text: "Skip to main content" },
+  { href: "#header", text: "Skip to navigation" },
+  { href: "#footer", text: "Skip to footer" }
+];
+
+const { links = defaultLinks } = Astro.props;
+---
+
+<div class="skip-links">
+  {links.map((link) => (
+    <a 
+      href={link.href} 
+      class="skip-link"
+      aria-label={link.text}
+    >
+      {link.text}
+    </a>
+  ))}
+</div>
+
+<style>
+  .skip-links {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+  }
+  
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+    z-index: 100;
+    transform: translateY(0);
+    transition: transform 0.2s ease-in-out;
+    will-change: transform;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    visibility: hidden;
+  }
+  
+  .skip-link:focus {
+    transform: translateY(40px);
+    outline: 2px solid #4a90e2;
+    outline-offset: 2px;
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .skip-link:hover {
+    background: #333;
+  }
+  
+  /* Dark mode support */
+  .dark .skip-link {
+    background: #fff;
+    color: #000;
+  }
+  
+  .dark .skip-link:hover {
+    background: #e5e5e5;
+  }
+</style>

@@ -2,6 +2,11 @@
 import Head from "@components/Head.astro";
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
+import FloatingButtons from "@components/FloatingButtons.astro";
+import ErrorBoundary from "@components/ErrorBoundary.astro";
+import LoadingIndicator from "@components/LoadingIndicator.astro";
+import SkipLinks from "@components/SkipLinks.astro";
+import FocusManager from "@components/FocusManager.astro";
 import { SITE } from "@consts";
 
 const { title, description } = Astro.props;
@@ -30,93 +35,19 @@ const { title, description } = Astro.props;
       /* Prevent layout shift during theme initialization */
       html { visibility: hidden; }
       html.theme-loaded { visibility: visible; }
-      
-      /* Skip link styles */
-      .skip-link {
-        position: absolute;
-        top: -40px;
-        left: 0;
-        background: #000;
-        color: white;
-        padding: 8px;
-        z-index: 100;
-        transform: translateY(0);
-        transition: transform 0.2s;
-        will-change: transform;
-      }
-      .skip-link:focus {
-        transform: translateY(40px);
-      }
-      
-      /* Focus styles */
-      :focus-visible {
-        outline: 2px solid #4a90e2;
-        outline-offset: 2px;
-      }
-      
-      /* Reduced motion */
-      @media (prefers-reduced-motion: reduce) {
-        * {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-          transition-duration: 0.01ms !important;
-          scroll-behavior: auto !important;
-        }
-      }
-
-      /* Print styles */
-      @media print {
-        .no-print {
-          display: none !important;
-        }
-        body {
-          background: white !important;
-          color: black !important;
-        }
-      }
-
-      /* Composited animations for floating buttons */
-      .floating-button {
-        position: relative;
-        transform: translateY(20px) translateZ(0);
-        opacity: 0;
-        visibility: hidden;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        will-change: transform, opacity;
-        backface-visibility: hidden;
-        perspective: 1000px;
-      }
-
-      .floating-button.visible {
-        transform: translateY(0) translateZ(0);
-        opacity: 1;
-        visibility: visible;
-      }
-
-      @media (max-width: 640px) {
-        .floating-button span {
-          display: none;
-        }
-        .floating-button {
-          width: 3rem;
-          padding: 0;
-          justify-content: center;
-        }
-      }
     </style>
 
     <!-- Theme initialization with improved error handling -->
     <script is:inline>
       (function() {
         try {
-          const theme = localStorage.getItem('theme') || 
-            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          document.documentElement.classList.toggle('dark', theme === 'dark');
-          document.documentElement.classList.add('theme-loaded');
+          const theme = localStorage.getItem("theme") || 
+            (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.classList.toggle("dark", theme === "dark");
+          document.documentElement.classList.add("theme-loaded");
         } catch (e) {
-          console.warn('Theme initialization failed:', e);
-          document.documentElement.classList.add('dark', 'theme-loaded');
+          console.warn("Theme initialization failed:", e);
+          document.documentElement.classList.add("dark", "theme-loaded");
         }
       })();
     </script>
@@ -125,198 +56,25 @@ const { title, description } = Astro.props;
     <script is:inline async src="https://cdn.seline.so/seline.js" data-token="3e7a569e0f2bcad"></script>
   </head>
   <body class="bg-stone-100 dark:bg-stone-900 text-black dark:text-white">
-    <!-- Skip link for accessibility -->
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <SkipLinks />
 
     <Header />
-    <main id="main-content">
+    <main id="main-content" role="main" aria-label="Main content">
       <slot />
     </main>
     <Footer />
 
-    <!-- Fixed position container for floating buttons -->
-    <div class="fixed bottom-0 right-0 z-50 p-5 pointer-events-none">
-      <!-- Back to Top Button -->
-      <div class="mb-3">
-        <button
-          id="backToTop"
-          class="floating-button h-12 px-4 bg-black text-white rounded-full pointer-events-auto hover:opacity-80 focus:opacity-100 no-print flex items-center gap-2"
-          aria-label="Back to top of page"
-          role="button"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            class="size-5"
-            stroke-width="2"
-          >
-            <polyline points="18 15 12 9 6 15"></polyline>
-          </svg>
-          <span class="text-sm whitespace-nowrap">Back to Top</span>
-        </button>
-      </div>
+    <FloatingButtons />
 
-      <!-- Last Update Button -->
-      <div>
-        <button
-          id="lastUpdate"
-          class="floating-button h-12 px-4 bg-red-700 text-white rounded-full pointer-events-auto hover:opacity-80 focus:opacity-100 no-print flex items-center gap-2"
-          aria-label="Jump to last update"
-          role="button"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            class="size-5"
-            stroke-width="2"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-          <span class="text-sm whitespace-nowrap">Last Update</span>
-        </button>
-      </div>
-    </div>
+    <ErrorBoundary />
 
-    <!-- Error boundary -->
-    <div id="error-boundary" class="hidden fixed inset-0 bg-red-100 dark:bg-red-900 p-4 z-50">
-      <div class="max-w-2xl mx-auto">
-        <h2 class="text-2xl font-bold mb-4">Something went wrong</h2>
-        <p class="mb-4">We're sorry, but there was an error loading this page. Please try refreshing.</p>
-        <button onclick="window.location.reload()" class="bg-red-600 text-white px-4 py-2 rounded">
-          Refresh Page
-        </button>
-      </div>
-    </div>
+    <LoadingIndicator />
 
-    <!-- Loading indicator with composited animation -->
-    <div 
-      id="loading-indicator" 
-      class="fixed top-0 left-0 w-full h-1 bg-blue-500 transform-gpu origin-left scale-x-0 transition-transform duration-300 z-50"
-      style="will-change: transform;"
-    ></div>
+    <FocusManager />
 
     <!-- Optimized Scripts -->
     <script>
-      // Performance monitoring
-      const PerformanceMonitor = {
-        init(): void {
-          if ('performance' in window) {
-            window.addEventListener('load', () => {
-              const entries = performance.getEntriesByType('navigation');
-              if (entries.length > 0) {
-                const timing = entries[0] as PerformanceNavigationTiming;
-                const loadTime = timing.loadEventEnd - timing.startTime;
-                console.log('Page load time:', loadTime);
-                // Send to analytics if needed
-              }
-            });
-          }
-        }
-      };
-
-      // Error handling
-      const ErrorHandler = {
-        init(): void {
-          window.addEventListener('error', (event) => {
-            console.error('Global error:', event.error);
-            // Show error boundary
-            const errorBoundary = document.getElementById('error-boundary');
-            if (errorBoundary) errorBoundary.classList.remove('hidden');
-          });
-
-          window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-          });
-        }
-      };
-
-      // Loading indicator
-      const LoadingIndicator = {
-        init(): void {
-          const indicator = document.getElementById('loading-indicator');
-          if (!indicator) return;
-
-          // Show loading indicator on navigation
-          document.addEventListener('astro:page-load', () => {
-            indicator.classList.remove('scale-x-0');
-          });
-
-          // Hide loading indicator when page is loaded
-          document.addEventListener('astro:after-swap', () => {
-            indicator.classList.add('scale-x-0');
-          });
-        }
-      };
-
-      // Use requestIdleCallback for non-critical operations
-      const scheduleIdleTask = (callback: () => void) => {
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(callback, { timeout: 1000 });
-        } else {
-          setTimeout(callback, 1);
-        }
-      };
-
-      // Optimized scroll handling with RAF
-      scheduleIdleTask(() => {
-        const backToTopButton = document.getElementById('backToTop');
-        const lastUpdateButton = document.getElementById('lastUpdate');
-        const footer = document.querySelector('footer');
-
-        if (!backToTopButton || !lastUpdateButton || !footer) return;
-
-        let ticking = false;
-        const handleScroll = () => {
-          if (!ticking) {
-            requestAnimationFrame(() => {
-              const scrollY = window.scrollY;
-              const viewportHeight = window.innerHeight;
-              const documentHeight = document.documentElement.scrollHeight;
-              const showThreshold = 200;
-
-              // Always show back to top button when scrolled down enough
-              backToTopButton.classList.toggle('visible', scrollY > showThreshold);
-
-              // Show last update button except when at the very bottom
-              lastUpdateButton.classList.toggle('visible',
-                scrollY + viewportHeight < documentHeight - 20
-              );
-
-              ticking = false;
-            });
-            ticking = true;
-          }
-        };
-
-        // Passive scroll listener
-        window.addEventListener('scroll', handleScroll, { passive: true });
-
-        // Smooth scroll handlers
-        backToTopButton.addEventListener('click', () => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        lastUpdateButton.addEventListener('click', () => {
-          window.scrollTo({ 
-            top: document.documentElement.scrollHeight,
-            behavior: 'smooth'
-          });
-        });
-
-        // Initial check
-        handleScroll();
-      });
-
-      // Initialize all managers when DOM is ready
-      document.addEventListener('DOMContentLoaded', () => {
-        PerformanceMonitor.init();
-        ErrorHandler.init();
-        LoadingIndicator.init();
-      });
+      import "/src/scripts/page-layout.js";
     </script>
   </body>
 </html>

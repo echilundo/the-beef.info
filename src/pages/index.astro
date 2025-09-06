@@ -92,31 +92,31 @@ const work = await Promise.all(
 <script>
   // Use requestIdleCallback for non-critical initialization
   const initTimeline = () => {
-    const items = document.querySelectorAll('.timeline-item');
+    const items = document.querySelectorAll(".timeline-item");
     if (!items.length) return;
 
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+            entry.target.classList.add("visible");
             io.unobserve(entry.target);
           }
         });
       },
-      { rootMargin: '50px' }
+      { rootMargin: "50px" }
     );
 
     items.forEach(item => io.observe(item));
   };
 
   // Initialize on page load
-  if ('requestIdleCallback' in window) {
+  if ("requestIdleCallback" in window) {
     requestIdleCallback(initTimeline);
   } else {
     setTimeout(initTimeline, 1);
   }
 
   // Re-initialize after Astro page transitions
-  document.addEventListener('astro:after-swap', initTimeline);
+  document.addEventListener("astro:after-swap", initTimeline);
 </script>

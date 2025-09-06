@@ -1,0 +1,13 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<div 
+  id="loading-indicator" 
+  class={`fixed top-0 left-0 w-full h-1 bg-blue-500 transform-gpu origin-left scale-x-0 transition-transform duration-300 z-50 ${className}`}
+  style="will-change: transform;"
+></div>

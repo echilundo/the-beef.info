@@ -1,0 +1,22 @@
+---
+import Link from "@components/Link.astro";
+import ThemeToggle from "@components/ThemeToggle.astro";
+import { SITE } from "@consts";
+
+interface Props {
+  showThemeToggle?: boolean;
+  class?: string;
+}
+
+const { showThemeToggle = true, class: className = "" } = Astro.props;
+---
+
+<nav class={`flex flex-wrap gap-y-2 justify-between items-center ${className}`} role="navigation" aria-label="Main navigation">
+  <Link href="/" underline={false} aria-label={`${SITE.NAME} - Go to homepage`}>
+    <div class="font-semibold">
+      {SITE.NAME}
+    </div>
+  </Link>
+  
+  {showThemeToggle && <ThemeToggle />}
+</nav>

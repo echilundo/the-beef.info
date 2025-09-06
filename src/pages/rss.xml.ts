@@ -10,8 +10,7 @@ export async function GET(context: Context) {
   const workItems = await getCollection("work");
 
   const items = workItems
-    .filter(item => !(item.data as any).draft)  // Temporarily casting to 'any' to bypass type checking; fix with proper type if 'draft' exists
-    .sort((a, b) => new Date((a.data as any).dateStart).valueOf() - new Date((b.data as any).dateStart).valueOf())
+    .sort((a, b) => new Date(a.data.dateStart).valueOf() - new Date(b.data.dateStart).valueOf())
     .map(item => ({
       title: `${item.data.role} at ${item.data.company}`,
       description: `Role: ${item.data.role}, Company: ${item.data.company}`,

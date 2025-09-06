@@ -1,0 +1,145 @@
+---
+// Focus management component for better keyboard navigation
+---
+
+<script>
+  // Focus management utilities
+  class FocusManager {
+    private focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    private focusHistory: HTMLElement[] = [];
+
+    // Get all focusable elements within a container
+    getFocusableElements(container: HTMLElement = document.body): HTMLElement[] {
+      return Array.from(container.querySelectorAll(this.focusableElements)) as HTMLElement[];
+    }
+
+    // Trap focus within a container
+    trapFocus(container: HTMLElement): void {
+      const focusableElements = this.getFocusableElements(container);
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement || !lastElement) return;
+
+      const handleTabKey = (e: KeyboardEvent) => {
+        if (e.key !== 'Tab') return;
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      };
+
+      container.addEventListener('keydown', handleTabKey);
+      
+      // Store cleanup function
+      (container as any).__focusTrapCleanup = () => {
+        container.removeEventListener('keydown', handleTabKey);
+      };
+    }
+
+    // Release focus trap
+    releaseFocusTrap(container: HTMLElement): void {
+      const cleanup = (container as any).__focusTrapCleanup;
+      if (cleanup) {
+        cleanup();
+        delete (container as any).__focusTrapCleanup;
+      }
+    }
+
+    // Save current focus
+    saveFocus(): void {
+      const activeElement = document.activeElement as HTMLElement;
+      if (activeElement && activeElement !== document.body) {
+        this.focusHistory.push(activeElement);
+      }
+    }
+
+    // Restore previous focus
+    restoreFocus(): void {
+      const previousElement = this.focusHistory.pop();
+      if (previousElement && document.contains(previousElement)) {
+        previousElement.focus();
+      }
+    }
+
+    // Move focus to next/previous element
+    moveFocus(direction: 'next' | 'previous'): void {
+      const focusableElements = this.getFocusableElements();
+      const currentIndex = focusableElements.indexOf(document.activeElement as HTMLElement);
+      
+      if (currentIndex === -1) return;
+
+      let nextIndex: number;
+      if (direction === 'next') {
+        nextIndex = (currentIndex + 1) % focusableElements.length;
+      } else {
+        nextIndex = currentIndex === 0 ? focusableElements.length - 1 : currentIndex - 1;
+      }
+
+      focusableElements[nextIndex]?.focus();
+    }
+
+    // Announce to screen readers
+    announce(message: string, priority: 'polite' | 'assertive' = 'polite'): void {
+      const announcement = document.createElement('div');
+      announcement.setAttribute('aria-live', priority);
+      announcement.setAttribute('aria-atomic', 'true');
+      announcement.className = 'sr-only';
+      announcement.textContent = message;
+      
+      document.body.appendChild(announcement);
+      
+      setTimeout(() => {
+        document.body.removeChild(announcement);
+      }, 1000);
+    }
+  }
+
+  // Initialize focus manager
+  const focusManager = new FocusManager();
+
+  // Global keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Alt + M: Focus main content
+    if (e.altKey && e.key === 'm') {
+      e.preventDefault();
+      const mainContent = document.getElementById('main-content');
+      if (mainContent) {
+        mainContent.focus();
+        focusManager.announce('Focused main content');
+      }
+    }
+
+    // Alt + N: Focus navigation
+    if (e.altKey && e.key === 'n') {
+      e.preventDefault();
+      const navigation = document.querySelector('nav');
+      if (navigation) {
+        const firstFocusable = focusManager.getFocusableElements(navigation)[0];
+        firstFocusable?.focus();
+        focusManager.announce('Focused navigation');
+      }
+    }
+
+    // Alt + T: Focus theme toggle
+    if (e.altKey && e.key === 't') {
+      e.preventDefault();
+      const themeToggle = document.querySelector('.light-theme-button');
+      if (themeToggle) {
+        (themeToggle as HTMLElement).focus();
+        focusManager.announce('Focused theme toggle');
+      }
+    }
+  });
+
+  // Make focus manager globally available
+  (window as any).focusManager = focusManager;
+</script>

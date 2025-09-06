@@ -2,7 +2,7 @@
 import "../styles/global.css";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-600.css";
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from "astro:transitions";
 
 interface Props {
   title: string;
@@ -32,14 +32,14 @@ const { title, description, image = "/nano.png" } = Astro.props;
 <!-- Font optimization -->
 <link 
   rel="preload" 
-  href="/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2" 
+  href="/assets/inter-latin-400-normal.C38fXH4l.woff2" 
   as="font"
   type="font/woff2"
   crossorigin
 />
 <link 
   rel="preload" 
-  href="/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2" 
+  href="/assets/inter-latin-600-normal.LgqL8muc.woff2" 
   as="font"
   type="font/woff2"
   crossorigin
@@ -68,7 +68,7 @@ const { title, description, image = "/nano.png" } = Astro.props;
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
 
 <!-- View Transitions -->
-<ViewTransitions fallback="swap" />
+<ClientRouter />
 
 <!-- Critical CSS -->
 <style is:inline>
@@ -94,9 +94,9 @@ const { title, description, image = "/nano.png" } = Astro.props;
 <script is:inline>
   // Minimal theme initialization - runs immediately
   (function() {
-    const theme = localStorage.theme === 'dark' || (!localStorage.theme && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-    document.documentElement.classList[theme === 'dark' ? 'add' : 'remove']('dark');
-    document.documentElement.style.setProperty('--initial-theme', `'${theme}'`);
+    const theme = localStorage.theme === "dark" || (!localStorage.theme && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+    document.documentElement.classList[theme === "dark" ? "add" : "remove"]("dark");
+    document.documentElement.style.setProperty("--initial-theme", `'${theme}'`);
   })();
 
   // Font loading optimization
@@ -120,7 +120,7 @@ const { title, description, image = "/nano.png" } = Astro.props;
 <script>
   // Use requestIdleCallback for non-critical operations
   const scheduleIdleTask = (callback: () => void) => {
-    if ('requestIdleCallback' in window) {
+    if ("requestIdleCallback" in window) {
       requestIdleCallback(callback, { timeout: 1000 });
     } else {
       setTimeout(callback, 1);
@@ -129,16 +129,16 @@ const { title, description, image = "/nano.png" } = Astro.props;
 
   // Theme handling - deferred
   scheduleIdleTask(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleThemeChange = (e: MediaQueryListEvent) => {
       if (!localStorage.theme) {
         requestAnimationFrame(() => {
-          document.documentElement.classList.toggle('dark', e.matches);
+          document.documentElement.classList.toggle("dark", e.matches);
         });
       }
     };
     
-    mediaQuery.addEventListener('change', handleThemeChange);
+    mediaQuery.addEventListener("change", handleThemeChange);
   });
 
   // Scroll handling - optimized with ResizeObserver
@@ -150,14 +150,14 @@ const { title, description, image = "/nano.png" } = Astro.props;
       if (!ticking) {
         requestAnimationFrame(() => {
           const shouldShowHeader = window.scrollY > scrollThreshold;
-          document.documentElement.classList.toggle('scrolled', shouldShowHeader);
+          document.documentElement.classList.toggle("scrolled", shouldShowHeader);
           ticking = false;
         });
         ticking = true;
       }
     };
 
-    document.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener("scroll", handleScroll, { passive: true });
   });
 </script>
 
@@ -168,7 +168,7 @@ const { title, description, image = "/nano.png" } = Astro.props;
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url('/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2') format('woff2');
+    src: url('/assets/inter-latin-400-normal.C38fXH4l.woff2') format('woff2');
     font-synthesis: none;
   }
   
@@ -177,7 +177,7 @@ const { title, description, image = "/nano.png" } = Astro.props;
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url('/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2') format('woff2');
+    src: url('/assets/inter-latin-600-normal.LgqL8muc.woff2') format('woff2');
     font-synthesis: none;
   }
 </style>
