@@ -13,7 +13,7 @@ export async function GET(context: Context) {
     .sort((a, b) => new Date(a.data.dateStart).valueOf() - new Date(b.data.dateStart).valueOf())
     .map(item => ({
       title: `${item.data.role} at ${item.data.company}`,
-      description: `Role: ${item.data.role}, Company: ${item.data.company}`,
+      description: `${item.data.role} — ${item.data.company}`,
       pubDate: new Date(item.data.dateStart),
       link: `/${item.collection}/${item.id}/`,
     }));

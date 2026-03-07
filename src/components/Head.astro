@@ -4,6 +4,7 @@ import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-600.css";
 import "@fontsource/lora/latin.css";
 import { ClientRouter } from "astro:transitions";
+import { SITE } from "@consts";
 
 interface Props {
   title: string;
@@ -37,6 +38,8 @@ const { title, description, image = "/og-image.png" } = Astro.props;
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={new URL(image, Astro.url)} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:site_name" content={SITE.NAME} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
@@ -44,6 +47,20 @@ const { title, description, image = "/og-image.png" } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
+
+<!-- JSON-LD Structured Data -->
+<script is:inline type="application/ld+json" set:html={JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": SITE.NAME,
+  "url": Astro.site,
+  "description": description,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": `${Astro.site}?q={search_term_string}`,
+    "query-input": "required name=search_term_string"
+  }
+})} />
 
 <!-- View Transitions -->
 <ClientRouter />
@@ -88,7 +105,8 @@ const { title, description, image = "/og-image.png" } = Astro.props;
     if ("fonts" in document) {
       Promise.all([
         document.fonts.load("1em Inter"),
-        document.fonts.load("600 1em Inter")
+        document.fonts.load("600 1em Inter"),
+        document.fonts.load("1em Lora")
       ]).then(function() {
         clearTimeout(timeout);
         requestAnimationFrame(revealPage);

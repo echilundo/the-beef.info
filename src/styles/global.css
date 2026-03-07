@@ -72,22 +72,6 @@ html.scrolled #back-to-top {
   @apply opacity-100 pointer-events-auto;
 }
 
-/* Critical performance styles */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  @apply bg-black text-white;
-  padding: 8px;
-  z-index: 100;
-  transform: translateY(0);
-  transition: transform 0.2s;
-  will-change: transform;
-}
-
-.skip-link:focus {
-  transform: translateY(40px);
-}
 
 :focus-visible {
   outline: 2px solid theme('colors.blue.500');

@@ -1,27 +1,13 @@
-// Performance monitoring
-const PerformanceMonitor = {
-  init() {
-    if ("performance" in window) {
-      window.addEventListener("load", () => {
-        const entries = performance.getEntriesByType("navigation");
-        if (entries.length > 0) {
-          const timing = entries[0];
-          const loadTime = timing.loadEventEnd - timing.startTime;
-          // TODO: Send to analytics if needed
-          void loadTime;
-        }
-      });
-    }
-  }
-};
-
 // Error handling
 const ErrorHandler = {
   init() {
     window.addEventListener("error", (event) => {
       console.error("Global error:", event.error);
       const errorBoundary = document.getElementById("error-boundary");
-      if (errorBoundary) errorBoundary.classList.remove("hidden");
+      if (errorBoundary) {
+        errorBoundary.classList.remove("hidden");
+        errorBoundary.focus();
+      }
     });
 
     window.addEventListener("unhandledrejection", (event) => {
@@ -34,16 +20,19 @@ const ErrorHandler = {
 const LoadingIndicator = {
   init() {
     const indicator = document.getElementById("loading-indicator");
+    const statusText = document.getElementById("loading-indicator-text");
     if (!indicator) return;
 
     // * astro:before-preparation fires when a navigation begins (show the bar).
     document.addEventListener("astro:before-preparation", () => {
       indicator.classList.remove("scale-x-0");
+      if (statusText) statusText.textContent = "Loading page…";
     });
 
     // * astro:page-load fires when the incoming page is fully ready (hide the bar).
     document.addEventListener("astro:page-load", () => {
       indicator.classList.add("scale-x-0");
+      if (statusText) statusText.textContent = "";
     });
   }
 };
@@ -106,7 +95,6 @@ const ScrollHandler = {
 // * astro:page-load fires after every navigation (hard load + soft View Transition),
 //   so re-initializing here ensures event listeners are attached to the fresh DOM.
 document.addEventListener("astro:page-load", () => {
-  PerformanceMonitor.init();
   ErrorHandler.init();
   LoadingIndicator.init();
   

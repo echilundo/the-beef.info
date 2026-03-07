@@ -2,7 +2,6 @@ import type { Site, Metadata } from "@types";
 
 export const SITE: Site = {
   NAME: "The Beef",
-  EMAIL: "",
 };
 
 export const HOME: Metadata = {
@@ -12,5 +11,5 @@ export const HOME: Metadata = {
 
 export const WORK: Metadata = {
   TITLE: "Timeline",
-  DESCRIPTION: "A timeline of the events.",
+  DESCRIPTION: "The complete timeline of the Kendrick Lamar vs. Drake hip-hop beef — every diss, drop, and response.",
 };

@@ -156,3 +156,49 @@ Each entry must include:
 **readingtime-daterange-dead** — 2026-03-07 — Removed `readingTime()` and `dateRange()` from `src/lib/utils.ts`. No blog post pages exist in the project; the exports were dead code.
 
 **unused-packages** — 2026-03-07 — Ran `npm uninstall unified unist-util-visit lazysizes @tailwindcss/aspect-ratio`. All four packages had no consumers in `src/`.
+
+**notlikeus-mv-youtube-bug** — 2026-03-07 — Removed stray `/>` from YouTube URL string in `notlikeus-mv.mdx`. The malformed URL was silently breaking the embed.
+
+**grahams-wrong-date** — 2026-03-07 — Fixed `dateStart` in `grahams.mdx` from `"03/15/2024"` (March) to `"05/03/2024"` (May). Entry now appears at the correct position on the timeline alongside Drake's "Family Matters".
+
+**hsts-header-survivability** — 2026-03-07 — Added `Strict-Transport-Security` to the `@astrojs/netlify` adapter's `build.headers` in `astro.config.mjs`. HSTS now survives even if the adapter regenerates `_headers` during build.
+
+**lora-font-gate** — 2026-03-07 — Added `document.fonts.load("1em Lora")` to the `Promise.all` in `Head.astro`. The page reveal now waits for Lora to load, eliminating the Inter → Lora swap visible on first paint.
+
+**vite-config-noise** — 2026-03-07 — Removed `optimizeDeps.force: true` (dev startup penalty), `astro:transitions` from `optimizeDeps.include` and `ssr.noExternal` (virtual module, no-op), and dead `tailwind` branch from `manualChunks` (Tailwind has no JS bundle).
+
+**netlify-adapter-invalid-keys** — 2026-03-07 — Removed unsupported `compress: true`, `minify: true`, and `inlineStylesheets: "always"` from the Netlify adapter's `build` block. Compression/minification is handled by Vite and the Astro `build.inlineStylesheets` key.
+
+**xss-protection-deprecated** — 2026-03-07 — Removed `X-XSS-Protection: 1; mode=block` from the security headers. The header is ignored by all modern browsers and was removed from Chrome in v78.
+
+**seo-meta-description** — 2026-03-07 — Updated `WORK.DESCRIPTION` in `src/consts.ts` from the generic "A timeline of the events." to a keyword-rich description referencing Kendrick Lamar, Drake, and the beef.
+
+**seo-og-meta** — 2026-03-07 — Added `og:locale` and `og:site_name` to `Head.astro`. These are required by most social platforms for proper link preview rendering.
+
+**seo-json-ld** — 2026-03-07 — Added a `WebSite` JSON-LD schema block to `Head.astro`. Enables Google sitelinks searchbox and richer indexing.
+
+**loading-indicator-role** — 2026-03-07 — Changed `LoadingIndicator.astro` from `role="progressbar"` (requires `aria-valuenow`) to `role="status" aria-live="polite"` with a visually-hidden text child that JS updates on navigation start/end.
+
+**error-boundary-focus** — 2026-03-07 — Added `tabindex="-1"` to `ErrorBoundary.astro` and `errorBoundary.focus()` in `page-layout.js`. Keyboard and screen reader users now receive focus when the overlay appears.
+
+**performance-monitor-dead** — 2026-03-07 — Removed `PerformanceMonitor` from `page-layout.js`. The object calculated `loadTime` and immediately discarded it with `void`; it was pure overhead.
+
+**site-email-empty** — 2026-03-07 — Removed `EMAIL: ""` from `src/consts.ts` and its field from `src/types.ts`. The field was never consumed and would silently render nothing if accessed.
+
+**skip-link-css-duplicate** — 2026-03-07 — Removed the `.skip-link` block from `global.css`. The authoritative (richer) scoped styles live in `SkipLinks.astro`.
+
+**rss-machine-format** — 2026-03-07 — Changed RSS item description from `` `Role: ${role}, Company: ${company}` `` to `` `${role} — ${company}` `` in `rss.xml.ts`.
+
+**grammys-typo** — 2026-03-07 — Fixed `"grammny"` → `"Grammy"` in the alt text of `grammys.mdx`.
+
+**role-main-redundant** — 2026-03-07 — Removed `role="main"` from `<main>` in `PageLayout.astro`. The element carries an implicit `main` role.
+
+**role-complementary-misapplied** — 2026-03-07 — Removed `role="complementary"` from the `FloatingButtons.astro` wrapper `<div>`. Navigation shortcut buttons are not complementary content; each button already has an `aria-label`.
+
+**heavy-page-copy** — 2026-03-07 — Replaced `"It's a heavy page, so please be patient."` with `"Scroll to explore the full timeline."` in `index.astro`. The original copy created unnecessary user anxiety.
+
+**transition-persist-static** — 2026-03-07 — Added `transition:persist` to `<Header />` and `<FloatingButtons />` in `PageLayout.astro`. Astro's View Transitions now reuses these DOM elements across navigations instead of tearing them down and rebuilding them.
+
+**youtube-full-urls** — 2026-03-07 — Converted all 48 YouTube embeds in `src/content/work/*.mdx` from full URLs to bare 11-character video IDs. Bare IDs enable `astro-embed`'s lite-embed path with lazy-loading poster images.
+
+**twitter-preconnect** — 2026-03-07 — Added `<link rel="preconnect">` and `<link rel="dns-prefetch">` for `platform.twitter.com` in `PageLayout.astro`. Eliminates cold DNS/TCP/TLS handshakes on first Twitter widget load.

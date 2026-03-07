@@ -21,15 +21,12 @@ export default defineConfig({
   adapter: netlify({
     compressHTML: true,
     build: {
-      compress: true,
-      inlineStylesheets: "always",
-      minify: true,
       headers: {
         "/*": {
+          "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
           "Cache-Control": "public, max-age=0, must-revalidate",
           "X-Content-Type-Options": "nosniff",
           "X-Frame-Options": "DENY",
-          "X-XSS-Protection": "1; mode=block",
           "Referrer-Policy": "strict-origin-when-cross-origin",
           "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
         },
@@ -71,13 +68,9 @@ export default defineConfig({
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            // Separate vendor chunks for better caching
             if (id.includes('node_modules')) {
               if (id.includes('astro')) {
                 return 'astro';
-              }
-              if (id.includes('tailwind')) {
-                return 'tailwind';
               }
               return 'vendor';
             }
@@ -93,11 +86,7 @@ export default defineConfig({
       }
     },
     optimizeDeps: {
-      include: ['astro:transitions'],
-      force: true,
+      include: [],
     },
-    ssr: {
-      noExternal: ['astro:transitions']
-    }
   }
 });
