@@ -6,12 +6,18 @@ interface Props {
 const { class: className = "" } = Astro.props;
 ---
 
-<div id="error-boundary" class={`hidden fixed inset-0 bg-red-100 dark:bg-red-900 p-4 z-50 ${className}`}>
+<div id="error-boundary" class={`hidden fixed inset-0 bg-red-100 dark:bg-red-900 p-4 z-50 ${className}`} role="alertdialog" aria-modal="true" aria-labelledby="error-heading">
   <div class="max-w-2xl mx-auto">
-    <h2 class="text-2xl font-bold mb-4">Something went wrong</h2>
+    <h2 id="error-heading" class="text-2xl font-bold mb-4">Something went wrong</h2>
     <p class="mb-4">We're sorry, but there was an error loading this page. Please try refreshing.</p>
-    <button onclick="window.location.reload()" class="bg-red-600 text-white px-4 py-2 rounded">
+    <button id="error-boundary-refresh" class="bg-red-600 text-white px-4 py-2 rounded" type="button">
       Refresh Page
     </button>
   </div>
 </div>
+
+<script>
+  document.getElementById("error-boundary-refresh")?.addEventListener("click", () => {
+    window.location.reload();
+  });
+</script>

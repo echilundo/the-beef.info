@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-600.css";
+import "@fontsource/lora/latin.css";
 import { ClientRouter } from "astro:transitions";
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const { title, description, image = "/nano.png" } = Astro.props;
+const { title, description, image = "/og-image.png" } = Astro.props;
 ---
 
 <!-- Global Metadata -->
@@ -21,29 +22,6 @@ const { title, description, image = "/nano.png" } = Astro.props;
 <link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: light)">
 <link rel="icon" type="image/x-icon" href="/favicon-light.svg">
 <meta name="generator" content={Astro.generator} />
-
-<!-- Preload critical assets -->
-<link 
-  rel="modulepreload" 
-  href="/_astro/ClientRouter.astro_astro.CMTcOisY.js" 
-  as="script"
-/>
-
-<!-- Font optimization -->
-<link 
-  rel="preload" 
-  href="/assets/inter-latin-400-normal.C38fXH4l.woff2" 
-  as="font"
-  type="font/woff2"
-  crossorigin
-/>
-<link 
-  rel="preload" 
-  href="/assets/inter-latin-600-normal.LgqL8muc.woff2" 
-  as="font"
-  type="font/woff2"
-  crossorigin
-/>
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
@@ -101,17 +79,23 @@ const { title, description, image = "/nano.png" } = Astro.props;
 
   // Font loading optimization
   (function() {
+    // * 3 s timeout ensures the page is never permanently invisible if fonts fail.
+    const revealPage = function() {
+      document.documentElement.classList.add("fonts-loaded");
+    };
+    const timeout = setTimeout(revealPage, 3000);
+
     if ("fonts" in document) {
       Promise.all([
         document.fonts.load("1em Inter"),
         document.fonts.load("600 1em Inter")
-      ]).then(() => {
-        requestAnimationFrame(() => {
-          document.documentElement.classList.add("fonts-loaded");
-        });
-      });
+      ]).then(function() {
+        clearTimeout(timeout);
+        requestAnimationFrame(revealPage);
+      }).catch(revealPage);
     } else {
-      document.documentElement.classList.add("fonts-loaded");
+      clearTimeout(timeout);
+      revealPage();
     }
   })();
 </script>
@@ -144,12 +128,13 @@ const { title, description, image = "/nano.png" } = Astro.props;
   // Scroll handling - optimized with ResizeObserver
   scheduleIdleTask(() => {
     let ticking = false;
-    const scrollThreshold = 0;
+    // * Offset of 0 means the "scrolled" class (which shows back-to-top) activates immediately on any scroll.
+    const BACK_TO_TOP_SCROLL_OFFSET = 0;
     
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          const shouldShowHeader = window.scrollY > scrollThreshold;
+          const shouldShowHeader = window.scrollY > BACK_TO_TOP_SCROLL_OFFSET;
           document.documentElement.classList.toggle("scrolled", shouldShowHeader);
           ticking = false;
         });
@@ -160,26 +145,5 @@ const { title, description, image = "/nano.png" } = Astro.props;
     document.addEventListener("scroll", handleScroll, { passive: true });
   });
 </script>
-
-<style>
-  /* Font loading optimization */
-  @font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url('/assets/inter-latin-400-normal.C38fXH4l.woff2') format('woff2');
-    font-synthesis: none;
-  }
-  
-  @font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 600;
-    font-display: swap;
-    src: url('/assets/inter-latin-600-normal.LgqL8muc.woff2') format('woff2');
-    font-synthesis: none;
-  }
-</style>
 
 <slot />

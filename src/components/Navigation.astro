@@ -11,7 +11,7 @@ interface Props {
 const { showThemeToggle = true, class: className = "" } = Astro.props;
 ---
 
-<nav class={`flex flex-wrap gap-y-2 justify-between items-center ${className}`} role="navigation" aria-label="Main navigation">
+<nav class={`flex flex-wrap gap-y-2 justify-between items-center ${className}`} aria-label="Main navigation">
   <Link href="/" underline={false} aria-label={`${SITE.NAME} - Go to homepage`}>
     <div class="font-semibold">
       {SITE.NAME}

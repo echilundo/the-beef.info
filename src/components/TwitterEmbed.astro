@@ -1,31 +1,32 @@
 ---
 import { getTweet } from "../lib/tweets";
+import { formatDate } from "@lib/utils";
 
 interface Props {
   id: string;
 }
 
 const { id } = Astro.props;
-const tweet = await getTweet(id);
-const hasVideo = tweet.hasVideo;
 
-// Format date for better performance (avoid client-side formatting)
-const formatDate = (dateStr: string) => {
-  try {
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat("en-US", { 
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    }).format(date);
-  } catch (e) {
-    return dateStr;
-  }
-};
+let tweet = null;
+let renderError = false;
 
-const formattedDate = formatDate(tweet.date);
+try {
+  tweet = await getTweet(id);
+} catch (e) {
+  renderError = true;
+  console.error(`TwitterEmbed: could not load tweet ${id}:`, e);
+}
+
+const formattedDate = tweet ? formatDate(new Date(tweet.date)) : "";
+const hasVideo = tweet?.hasVideo ?? false;
 ---
 
+{renderError ? (
+  <div class="tweet-embed p-4 border border-red-300 rounded text-red-600 dark:text-red-400">
+    Tweet unavailable.
+  </div>
+) : tweet && (
 <div class="tweet-embed">
   {!hasVideo ? (
     <div class="tweet-content">
@@ -38,7 +39,7 @@ const formattedDate = formatDate(tweet.date);
           <div class="mt-2 text-black dark:text-white whitespace-pre-wrap">{tweet.text}</div>
           <div class="mt-2">
             <a 
-              href={`https://twitter.com/${tweet.authorUsername}/status/${tweet.id}`}
+              href={`https://x.com/${tweet.authorUsername}/status/${tweet.id}`}
               target="_blank"
               rel="noopener noreferrer"
               class="text-sm text-blue-500 hover:underline"
@@ -69,12 +70,15 @@ const formattedDate = formatDate(tweet.date);
       {/* Actual tweet embed - loaded lazily */}
       <div class="tweet-embed-container hidden">
         <blockquote class="twitter-tweet" data-dnt="true">
-          <a href={`https://twitter.com/${tweet.authorUsername}/status/${id}`}></a>
+          <a href={`https://x.com/${tweet.authorUsername}/status/${id}`}>
+            <span class="sr-only">View tweet on X</span>
+          </a>
         </blockquote>
       </div>
     </div>
   )}
 </div>
+)}
 
 <style>
   .tweet-embed {
@@ -132,6 +136,9 @@ const formattedDate = formatDate(tweet.date);
     }
   }
 
+  // * X (formerly Twitter) widgets script URL.
+  const TWITTER_WIDGETS_URL = "https://platform.twitter.com/widgets.js";
+
   let scriptLoading = false;
   let scriptLoaded = false;
 
@@ -140,7 +147,7 @@ const formattedDate = formatDate(tweet.date);
     
     scriptLoading = true;
     const script = document.createElement("script");
-    script.src = "https://platform.twitter.com/widgets.js";
+    script.src = TWITTER_WIDGETS_URL;
     script.async = true;
     
     return new Promise((resolve, reject) => {
@@ -157,7 +164,29 @@ const formattedDate = formatDate(tweet.date);
     });
   };
 
+  const showError = (container: Element, tweetId: string) => {
+    const placeholder = container.querySelector(".tweet-placeholder");
+    if (!placeholder) return;
+
+    // * Build DOM nodes instead of using innerHTML to prevent XSS.
+    const wrapper = document.createElement("div");
+    wrapper.className = "text-red-500";
+
+    const msg = document.createTextNode("Failed to load tweet. ");
+    const link = document.createElement("a");
+    link.href = `https://x.com/i/status/${tweetId}`;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.className = "underline";
+    link.textContent = "View on X";
+
+    wrapper.appendChild(msg);
+    wrapper.appendChild(link);
+    placeholder.replaceChildren(wrapper);
+  };
+
   const loadTweet = async (container: Element) => {
+    const tweetId = container.getAttribute("data-tweet-id") ?? "";
     try {
       await loadTwitterScript();
       
@@ -171,38 +200,27 @@ const formattedDate = formatDate(tweet.date);
       }
     } catch (error) {
       console.error("Error loading tweet:", error);
-      // Show error state in placeholder
-      const placeholder = container.querySelector(".tweet-placeholder");
-      if (placeholder) {
-        placeholder.innerHTML = `
-          <div class="text-red-500">
-            Failed to load tweet. 
-            <a href="https://twitter.com/status/${container.getAttribute("data-tweet-id")}" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               class="underline">
-              View on Twitter
-            </a>
-          </div>
-        `;
-      }
+      showError(container, tweetId);
     }
   };
 
-  // Use Intersection Observer for lazy loading
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        loadTweet(entry.target);
-        observer.unobserve(entry.target);
-      }
+  const observeContainers = () => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          loadTweet(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      rootMargin: "50px"
     });
-  }, {
-    rootMargin: "50px" // Start loading slightly before the tweet comes into view
-  });
 
-  // Observe all video tweet containers
-  document.querySelectorAll(".video-tweet-container").forEach(container => {
-    observer.observe(container);
-  });
-</script> 
+    document.querySelectorAll(".video-tweet-container").forEach(container => {
+      observer.observe(container);
+    });
+  };
+
+  // * Re-observe containers on every View Transition so tweets on revisited pages load correctly.
+  document.addEventListener("astro:page-load", observeContainers);
+</script>

@@ -17,23 +17,40 @@ import Navigation from "@components/Navigation.astro";
     }
   </style>
   <script>
+    // * Minimum scroll delta before hiding the header, prevents flickering on 1px momentum scrolls.
+    const HIDE_THRESHOLD_PX = 50;
+
     let lastScrollTop = 0;
     const header = document.getElementById("header");
 
     const handleScroll = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const isScrollingDown = scrollTop > lastScrollTop;
-      
+      const delta = scrollTop - lastScrollTop;
+
+      if (Math.abs(delta) < HIDE_THRESHOLD_PX) return;
+
+      const isScrollingDown = delta > 0;
+
       if (header) {
         header.classList.toggle("hide", isScrollingDown);
-        // Update aria-hidden for screen readers when header is hidden
-        header.setAttribute("aria-hidden", isScrollingDown.toString());
+        // * Use `inert` instead of aria-hidden so that hidden focusable children
+        //   are removed from both the accessibility tree and the tab order together.
+        if (isScrollingDown) {
+          header.setAttribute("inert", "");
+        } else {
+          header.removeAttribute("inert");
+        }
       }
-      
+
       lastScrollTop = scrollTop;
     };
 
     // Use passive scroll listener for better performance
     window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Re-initialize on each View Transition to get the fresh DOM node
+    document.addEventListener("astro:page-load", () => {
+      lastScrollTop = 0;
+    });
   </script>
 </header>

@@ -7,8 +7,8 @@ const PerformanceMonitor = {
         if (entries.length > 0) {
           const timing = entries[0];
           const loadTime = timing.loadEventEnd - timing.startTime;
-          console.log("Page load time:", loadTime);
-          // Send to analytics if needed
+          // TODO: Send to analytics if needed
+          void loadTime;
         }
       });
     }
@@ -20,7 +20,6 @@ const ErrorHandler = {
   init() {
     window.addEventListener("error", (event) => {
       console.error("Global error:", event.error);
-      // Show error boundary
       const errorBoundary = document.getElementById("error-boundary");
       if (errorBoundary) errorBoundary.classList.remove("hidden");
     });
@@ -37,13 +36,13 @@ const LoadingIndicator = {
     const indicator = document.getElementById("loading-indicator");
     if (!indicator) return;
 
-    // Show loading indicator on navigation
-    document.addEventListener("astro:page-load", () => {
+    // * astro:before-preparation fires when a navigation begins (show the bar).
+    document.addEventListener("astro:before-preparation", () => {
       indicator.classList.remove("scale-x-0");
     });
 
-    // Hide loading indicator when page is loaded
-    document.addEventListener("astro:after-swap", () => {
+    // * astro:page-load fires when the incoming page is fully ready (hide the bar).
+    document.addEventListener("astro:page-load", () => {
       indicator.classList.add("scale-x-0");
     });
   }
@@ -75,10 +74,8 @@ const ScrollHandler = {
           const documentHeight = document.documentElement.scrollHeight;
           const showThreshold = 200;
 
-          // Always show back to top button when scrolled down enough
           backToTopButton.classList.toggle("visible", scrollY > showThreshold);
 
-          // Show last update button except when at the very bottom
           lastUpdateButton.classList.toggle("visible",
             scrollY + viewportHeight < documentHeight - 20
           );
@@ -89,10 +86,8 @@ const ScrollHandler = {
       }
     };
 
-    // Passive scroll listener
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Smooth scroll handlers
     backToTopButton.addEventListener("click", () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -104,18 +99,17 @@ const ScrollHandler = {
       });
     });
 
-    // Initial check
     handleScroll();
   }
 };
 
-// Initialize all managers when DOM is ready
-document.addEventListener("DOMContentLoaded", () => {
+// * astro:page-load fires after every navigation (hard load + soft View Transition),
+//   so re-initializing here ensures event listeners are attached to the fresh DOM.
+document.addEventListener("astro:page-load", () => {
   PerformanceMonitor.init();
   ErrorHandler.init();
   LoadingIndicator.init();
   
-  // Initialize scroll handler with idle callback
   scheduleIdleTask(() => {
     ScrollHandler.init();
   });

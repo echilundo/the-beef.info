@@ -6,7 +6,7 @@ import netlify from "@astrojs/netlify";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://astro-nano-demo.vercel.app",
+  site: "https://the-beef.info",
   integrations: [mdx(), sitemap(), tailwind()],
   output: "static",
   image: {
@@ -19,7 +19,6 @@ export default defineConfig({
     }],
   },
   adapter: netlify({
-    cacheOnDemandPages: true,
     compressHTML: true,
     build: {
       compress: true,
@@ -50,7 +49,6 @@ export default defineConfig({
     inlineStylesheets: 'always',
     assets: 'assets',
     splitting: true,
-    prebuild: true,
   },
   vite: {
     build: {
@@ -62,16 +60,9 @@ export default defineConfig({
           drop_debugger: true,
           pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
           passes: 3,
-          unsafe_math: true,
-          unsafe_comps: true,
-          unsafe_Function: true,
-          unsafe_arrows: true,
         },
         mangle: {
           toplevel: true,
-          properties: {
-            regex: /^_/
-          }
         },
         format: {
           comments: false,

@@ -1,0 +1,3 @@
+# * Redirect /work to homepage – both pages rendered identical content.
+/work /    301
+/work/     /    301

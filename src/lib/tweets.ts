@@ -47,7 +47,3 @@ export async function getTweet(id: string): Promise<Tweet> {
   tweetCache.set(id, tweet);
   return tweet;
 }
-
-export function clearTweetCache() {
-  tweetCache.clear();
-} 

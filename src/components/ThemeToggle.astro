@@ -19,7 +19,6 @@ const { class: className = "" } = Astro.props;
     type="button"
   >
     <SunIcon />
-    <span class="sr-only">Switch to light theme</span>
   </button>
   
   <!-- Dark Theme Button -->
@@ -31,82 +30,77 @@ const { class: className = "" } = Astro.props;
     type="button"
   >
     <MoonIcon />
-    <span class="sr-only">Switch to dark theme</span>
   </button>
 </div>
 
 <script>
   // Theme toggle functionality with enhanced accessibility
-  const lightButton = document.getElementById('light-theme-button');
-  const darkButton = document.getElementById('dark-theme-button');
+  const lightButton = document.getElementById("light-theme-button");
+  const darkButton = document.getElementById("dark-theme-button");
 
   const updateThemeButtons = () => {
-    const isDark = document.documentElement.classList.contains('dark');
+    const isDark = document.documentElement.classList.contains("dark");
     
     if (lightButton && darkButton) {
-      // Update visual state
-      (lightButton as HTMLElement).style.opacity = isDark ? '0.5' : '1';
-      (darkButton as HTMLElement).style.opacity = isDark ? '1' : '0.5';
+      (lightButton as HTMLElement).style.opacity = isDark ? "0.5" : "1";
+      (darkButton as HTMLElement).style.opacity = isDark ? "1" : "0.5";
       
-      // Update ARIA attributes
-      lightButton.setAttribute('aria-pressed', (!isDark).toString());
-      darkButton.setAttribute('aria-pressed', isDark.toString());
+      lightButton.setAttribute("aria-pressed", (!isDark).toString());
+      darkButton.setAttribute("aria-pressed", isDark.toString());
       
-      // Update aria-labels for screen readers
-      lightButton.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Currently using light theme');
-      darkButton.setAttribute('aria-label', isDark ? 'Currently using dark theme' : 'Switch to dark theme');
+      lightButton.setAttribute("aria-label", isDark ? "Switch to light theme" : "Currently using light theme");
+      darkButton.setAttribute("aria-label", isDark ? "Currently using dark theme" : "Switch to dark theme");
     }
   };
 
-  const setTheme = (theme: 'light' | 'dark') => {
-    localStorage.setItem('theme', theme);
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    updateThemeButtons();
-    
-    // Announce theme change to screen readers
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = `Switched to ${theme} theme`;
-    document.body.appendChild(announcement);
-    
-    // Remove announcement after screen reader has time to read it
-    setTimeout(() => {
-      document.body.removeChild(announcement);
-    }, 1000);
+  const announce = (message: string) => {
+    const fm = (window as unknown as Record<string, unknown>).focusManager as { announce?: (msg: string) => void } | undefined;
+    if (fm?.announce) {
+      fm.announce(message);
+    }
   };
 
-  // Enhanced keyboard navigation
+  const setTheme = (theme: "light" | "dark") => {
+    localStorage.setItem("theme", theme);
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    updateThemeButtons();
+    announce(`Switched to ${theme} theme`);
+  };
+
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault();
-      const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-      const newTheme = event.key === 'ArrowLeft' ? 'light' : 'dark';
+      const currentTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+      const newTheme = event.key === "ArrowLeft" ? "light" : "dark";
       if (currentTheme !== newTheme) {
         setTheme(newTheme);
-        // Focus the newly active button
-        const targetButton = newTheme === 'light' ? lightButton : darkButton;
+        const targetButton = newTheme === "light" ? lightButton : darkButton;
         targetButton?.focus();
       }
     }
   };
 
-  // Event listeners
-  lightButton?.addEventListener('click', () => setTheme('light'));
-  darkButton?.addEventListener('click', () => setTheme('dark'));
+  lightButton?.addEventListener("click", () => setTheme("light"));
+  darkButton?.addEventListener("click", () => setTheme("dark"));
   
-  // Keyboard navigation
-  lightButton?.addEventListener('keydown', handleKeyDown);
-  darkButton?.addEventListener('keydown', handleKeyDown);
+  lightButton?.addEventListener("keydown", handleKeyDown);
+  darkButton?.addEventListener("keydown", handleKeyDown);
 
-  // Initialize theme buttons
-  document.addEventListener('DOMContentLoaded', updateThemeButtons);
-  
-  // Update buttons when theme changes
+  // * Run immediately (scripts are deferred; DOMContentLoaded has already fired by execution time).
+  updateThemeButtons();
+
+  // * Re-run after each View Transition so freshly-swapped buttons get correct state.
+  document.addEventListener("astro:page-load", updateThemeButtons);
+
+  // * Observe theme class changes and keep button state in sync.
+  //   The observer is disconnected before each navigation to prevent leaks.
   const observer = new MutationObserver(updateThemeButtons);
   observer.observe(document.documentElement, {
     attributes: true,
-    attributeFilter: ['class']
+    attributeFilter: ["class"]
+  });
+
+  document.addEventListener("astro:before-preparation", () => {
+    observer.disconnect();
   });
 </script>

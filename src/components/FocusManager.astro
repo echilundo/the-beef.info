@@ -3,17 +3,18 @@
 ---
 
 <script>
+  // * WeakMap avoids polluting HTMLElement instances with custom properties.
+  const focusTrapRegistry: WeakMap<HTMLElement, () => void> = new WeakMap();
+
   // Focus management utilities
   class FocusManager {
-    private focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    private focusableElements = "button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])";
     private focusHistory: HTMLElement[] = [];
 
-    // Get all focusable elements within a container
     getFocusableElements(container: HTMLElement = document.body): HTMLElement[] {
       return Array.from(container.querySelectorAll(this.focusableElements)) as HTMLElement[];
     }
 
-    // Trap focus within a container
     trapFocus(container: HTMLElement): void {
       const focusableElements = this.getFocusableElements(container);
       const firstElement = focusableElements[0];
@@ -22,7 +23,7 @@
       if (!firstElement || !lastElement) return;
 
       const handleTabKey = (e: KeyboardEvent) => {
-        if (e.key !== 'Tab') return;
+        if (e.key !== "Tab") return;
 
         if (e.shiftKey) {
           if (document.activeElement === firstElement) {
@@ -37,24 +38,20 @@
         }
       };
 
-      container.addEventListener('keydown', handleTabKey);
-      
-      // Store cleanup function
-      (container as any).__focusTrapCleanup = () => {
-        container.removeEventListener('keydown', handleTabKey);
-      };
+      container.addEventListener("keydown", handleTabKey);
+      focusTrapRegistry.set(container, () => {
+        container.removeEventListener("keydown", handleTabKey);
+      });
     }
 
-    // Release focus trap
     releaseFocusTrap(container: HTMLElement): void {
-      const cleanup = (container as any).__focusTrapCleanup;
+      const cleanup = focusTrapRegistry.get(container);
       if (cleanup) {
         cleanup();
-        delete (container as any).__focusTrapCleanup;
+        focusTrapRegistry.delete(container);
       }
     }
 
-    // Save current focus
     saveFocus(): void {
       const activeElement = document.activeElement as HTMLElement;
       if (activeElement && activeElement !== document.body) {
@@ -62,7 +59,6 @@
       }
     }
 
-    // Restore previous focus
     restoreFocus(): void {
       const previousElement = this.focusHistory.pop();
       if (previousElement && document.contains(previousElement)) {
@@ -70,15 +66,14 @@
       }
     }
 
-    // Move focus to next/previous element
-    moveFocus(direction: 'next' | 'previous'): void {
+    moveFocus(direction: "next" | "previous"): void {
       const focusableElements = this.getFocusableElements();
       const currentIndex = focusableElements.indexOf(document.activeElement as HTMLElement);
       
       if (currentIndex === -1) return;
 
       let nextIndex: number;
-      if (direction === 'next') {
+      if (direction === "next") {
         nextIndex = (currentIndex + 1) % focusableElements.length;
       } else {
         nextIndex = currentIndex === 0 ? focusableElements.length - 1 : currentIndex - 1;
@@ -87,12 +82,11 @@
       focusableElements[nextIndex]?.focus();
     }
 
-    // Announce to screen readers
-    announce(message: string, priority: 'polite' | 'assertive' = 'polite'): void {
-      const announcement = document.createElement('div');
-      announcement.setAttribute('aria-live', priority);
-      announcement.setAttribute('aria-atomic', 'true');
-      announcement.className = 'sr-only';
+    announce(message: string, priority: "polite" | "assertive" = "polite"): void {
+      const announcement = document.createElement("div");
+      announcement.setAttribute("aria-live", priority);
+      announcement.setAttribute("aria-atomic", "true");
+      announcement.className = "sr-only";
       announcement.textContent = message;
       
       document.body.appendChild(announcement);
@@ -103,43 +97,50 @@
     }
   }
 
-  // Initialize focus manager
   const focusManager = new FocusManager();
 
-  // Global keyboard shortcuts
-  document.addEventListener('keydown', (e) => {
-    // Alt + M: Focus main content
-    if (e.altKey && e.key === 'm') {
-      e.preventDefault();
-      const mainContent = document.getElementById('main-content');
-      if (mainContent) {
-        mainContent.focus();
-        focusManager.announce('Focused main content');
-      }
-    }
+  // * Guard prevents duplicate keydown listeners from accumulating across View Transitions.
+  let shortcutsRegistered = false;
 
-    // Alt + N: Focus navigation
-    if (e.altKey && e.key === 'n') {
-      e.preventDefault();
-      const navigation = document.querySelector('nav');
-      if (navigation) {
-        const firstFocusable = focusManager.getFocusableElements(navigation)[0];
-        firstFocusable?.focus();
-        focusManager.announce('Focused navigation');
-      }
-    }
+  const registerShortcuts = () => {
+    if (shortcutsRegistered) return;
+    shortcutsRegistered = true;
 
-    // Alt + T: Focus theme toggle
-    if (e.altKey && e.key === 't') {
-      e.preventDefault();
-      const themeToggle = document.querySelector('.light-theme-button');
-      if (themeToggle) {
-        (themeToggle as HTMLElement).focus();
-        focusManager.announce('Focused theme toggle');
+    document.addEventListener("keydown", (e) => {
+      // Alt + M: Focus main content
+      if (e.altKey && e.key === "m") {
+        e.preventDefault();
+        const mainContent = document.getElementById("main-content");
+        if (mainContent) {
+          mainContent.focus();
+          focusManager.announce("Focused main content");
+        }
       }
-    }
-  });
 
-  // Make focus manager globally available
-  (window as any).focusManager = focusManager;
+      // Alt + N: Focus navigation
+      if (e.altKey && e.key === "n") {
+        e.preventDefault();
+        const navigation = document.querySelector("nav");
+        if (navigation) {
+          const firstFocusable = focusManager.getFocusableElements(navigation)[0];
+          firstFocusable?.focus();
+          focusManager.announce("Focused navigation");
+        }
+      }
+
+      // Alt + T: Focus theme toggle
+      if (e.altKey && e.key === "t") {
+        e.preventDefault();
+        const themeToggle = document.querySelector(".light-theme-button");
+        if (themeToggle) {
+          (themeToggle as HTMLElement).focus();
+          focusManager.announce("Focused theme toggle");
+        }
+      }
+    });
+  };
+
+  registerShortcuts();
+
+  (window as unknown as Record<string, unknown>).focusManager = focusManager;
 </script>

@@ -15,7 +15,7 @@ export async function GET(context: Context) {
       title: `${item.data.role} at ${item.data.company}`,
       description: `Role: ${item.data.role}, Company: ${item.data.company}`,
       pubDate: new Date(item.data.dateStart),
-      link: `/${item.collection}/${item.slug}/`,
+      link: `/${item.collection}/${item.id}/`,
     }));
 
   return rss({

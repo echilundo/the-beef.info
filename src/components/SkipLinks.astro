@@ -20,7 +20,6 @@ const { links = defaultLinks } = Astro.props;
     <a 
       href={link.href} 
       class="skip-link"
-      aria-label={link.text}
     >
       {link.text}
     </a>
@@ -39,8 +38,7 @@ const { links = defaultLinks } = Astro.props;
     position: absolute;
     top: -40px;
     left: 0;
-    background: #000;
-    color: white;
+    @apply bg-black text-white;
     padding: 8px 16px;
     text-decoration: none;
     border-radius: 0 0 4px 0;
@@ -56,7 +54,7 @@ const { links = defaultLinks } = Astro.props;
   
   .skip-link:focus {
     transform: translateY(40px);
-    outline: 2px solid #4a90e2;
+    outline: 2px solid theme('colors.blue.500');
     outline-offset: 2px;
     opacity: 1;
     visibility: visible;
@@ -68,8 +66,7 @@ const { links = defaultLinks } = Astro.props;
   
   /* Dark mode support */
   .dark .skip-link {
-    background: #fff;
-    color: #000;
+    @apply bg-white text-black;
   }
   
   .dark .skip-link:hover {

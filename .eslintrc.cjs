@@ -8,6 +8,7 @@ module.exports = {
     "eslint:recommended",
     "plugin:astro/recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:jsx-a11y/recommended",
   ],
   parserOptions: {
     ecmaVersion: "latest",
