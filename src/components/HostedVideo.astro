@@ -1,0 +1,47 @@
+---
+import "plyr/dist/plyr.css";
+
+interface Props {
+  src: string;
+  title?: string;
+}
+
+const { src, title = "Embedded video" } = Astro.props;
+---
+
+<div class="hosted-video">
+  <video class="js-hosted-video" controls playsinline preload="metadata" aria-label={title}>
+    <source src={src} type="video/mp4" />
+    <track kind="captions" src="/videos/empty-captions.vtt" srclang="en" label="English captions" default />
+    Your browser does not support HTML5 video.
+  </video>
+</div>
+
+<script>
+  import Plyr from "plyr";
+
+  const initHostedVideos = () => {
+    document.querySelectorAll<HTMLVideoElement>(".js-hosted-video").forEach((video) => {
+      if (video.dataset.plyrInitialized === "true") return;
+      // * Mark element before init so repeated page-load events do not double-bind.
+      video.dataset.plyrInitialized = "true";
+      new Plyr(video, {
+        controls: [
+          "play-large",
+          "play",
+          "progress",
+          "current-time",
+          "mute",
+          "volume",
+          "settings",
+          "pip",
+          "fullscreen"
+        ],
+      });
+    });
+  };
+
+  initHostedVideos();
+  document.addEventListener("astro:page-load", initHostedVideos);
+</script>
+
