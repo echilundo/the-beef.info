@@ -1,0 +1,37 @@
+---
+/**
+ * Single timeline entry; shared by index and timeline-chunk for "Load more" DOM reduction.
+ */
+import type { WorkEntry } from "@lib/timeline";
+
+interface Props {
+  entry: WorkEntry;
+  showHr?: boolean;
+}
+
+const { entry, showHr = false } = Astro.props;
+const { formatDate } = await import("@lib/utils");
+---
+
+<li class="timeline-item opacity-0">
+  <time
+    datetime={new Date(entry.data.dateStart).toISOString()}
+    class="text-sm text-gray-600 dark:text-gray-300"
+  >
+    {formatDate(new Date(entry.data.dateStart))}
+  </time>
+  <div class="font-semibold text-black dark:text-white">
+    {entry.data.company}
+  </div>
+  <div class="text-sm text-gray-600 dark:text-gray-300">
+    {entry.data.role}
+  </div>
+  <article
+    class="mb-8 content-visibility-auto contain-intrinsic-size-[0_500px]"
+  >
+    <entry.Content />
+  </article>
+  {showHr && (
+    <hr class="mt-14 border-t border-gray-300 dark:border-gray-700" aria-hidden="true" />
+  )}
+</li>

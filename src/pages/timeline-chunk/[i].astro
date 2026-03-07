@@ -1,0 +1,32 @@
+---
+/**
+ * Pre-rendered HTML fragment for timeline "Load more" (reduces initial DOM).
+ * Returns items (INITIAL_COUNT + (i-1)*CHUNK_SIZE) to (INITIAL_COUNT + i*CHUNK_SIZE).
+ */
+import FragmentLayout from "@layouts/FragmentLayout.astro";
+import TimelineItem from "@components/TimelineItem.astro";
+import { getWork, getChunkCount, TIMELINE } from "@lib/timeline";
+
+export async function getStaticPaths() {
+  const work = await getWork();
+  const chunkCount = getChunkCount(work.length);
+  return Array.from({ length: chunkCount }, (_, i) => ({
+    params: { i: String(i + 1) },
+  }));
+}
+
+const { i } = Astro.params;
+const work = await getWork();
+const start = TIMELINE.INITIAL_COUNT + (Number(i) - 1) * TIMELINE.CHUNK_SIZE;
+const end = Math.min(start + TIMELINE.CHUNK_SIZE, work.length);
+const chunk = work.slice(start, end);
+---
+
+<FragmentLayout>
+  {chunk.map((entry, idx) => (
+    <TimelineItem
+      entry={entry}
+      showHr={idx < chunk.length - 1 || start + idx + 1 < work.length}
+    />
+  ))}
+</FragmentLayout>
