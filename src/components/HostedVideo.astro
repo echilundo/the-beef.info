@@ -17,6 +17,20 @@ const { src, title = "Embedded video" } = Astro.props;
   </video>
 </div>
 
+<!-- * Progress/seek input meets 44×44px tap target (Lighthouse tap-targets). -->
+<style>
+  .hosted-video .plyr__progress__container {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .hosted-video .plyr__progress input[type="range"] {
+    min-height: 44px;
+    padding: 12px 0;
+    box-sizing: content-box;
+  }
+</style>
+
 <script>
   import Plyr from "plyr";
 

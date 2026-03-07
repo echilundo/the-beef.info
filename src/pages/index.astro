@@ -28,7 +28,7 @@ const work = await Promise.all(
         <p class="text-lg font-medium">
           The full timeline of the greatest beef 🥩 saga in hip-hop.
         </p>
-        <p class="text-sm text-gray-500 dark:text-gray-400">
+        <p class="text-sm text-gray-600 dark:text-gray-300">
           All of it below.
         </p>
       </div>
@@ -41,14 +41,14 @@ const work = await Promise.all(
           <li class="timeline-item opacity-0">
             <time 
               datetime={new Date(entry.data.dateStart).toISOString()}
-              class="text-sm text-gray-600 dark:text-gray-400"
+              class="text-sm text-gray-600 dark:text-gray-300"
             >
               {formatDate(new Date(entry.data.dateStart))}
             </time>
             <div class="font-semibold text-black dark:text-white">
               {entry.data.company}
             </div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">
+            <div class="text-sm text-gray-600 dark:text-gray-300">
               {entry.data.role}
             </div>
             <article 

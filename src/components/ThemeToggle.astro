@@ -4,15 +4,19 @@ import MoonIcon from "@components/icons/MoonIcon.astro";
 
 interface Props {
   class?: string;
+  /** Unique suffix for button IDs to avoid duplicate-id when multiple toggles exist (e.g. nav + footer). */
+  idSuffix?: string;
 }
 
-const { class: className = "" } = Astro.props;
+const { class: className = "", idSuffix = "default" } = Astro.props;
+const lightId = `light-theme-button-${idSuffix}`;
+const darkId = `dark-theme-button-${idSuffix}`;
 ---
 
-<div class={`flex flex-wrap gap-1 items-center ${className}`} role="group" aria-label="Theme selection">
+<div class={`flex flex-wrap gap-1 items-center ${className}`} role="group" aria-label="Theme selection" data-theme-toggle={idSuffix}>
   <!-- Light Theme Button -->
   <button
-    id="light-theme-button"
+    id={lightId}
     aria-label="Switch to light theme"
     aria-pressed="false"
     class="group size-8 flex items-center justify-center rounded-full light-theme-button focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
@@ -20,10 +24,10 @@ const { class: className = "" } = Astro.props;
   >
     <SunIcon />
   </button>
-  
+
   <!-- Dark Theme Button -->
   <button
-    id="dark-theme-button"
+    id={darkId}
     aria-label="Switch to dark theme"
     aria-pressed="false"
     class="group size-8 flex items-center justify-center rounded-full dark-theme-button focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
@@ -34,23 +38,21 @@ const { class: className = "" } = Astro.props;
 </div>
 
 <script>
-  // Theme toggle functionality with enhanced accessibility
-  const lightButton = document.getElementById("light-theme-button");
-  const darkButton = document.getElementById("dark-theme-button");
-
+  // * Theme toggle: one script updates all instances (nav + footer) to avoid duplicate IDs.
   const updateThemeButtons = () => {
     const isDark = document.documentElement.classList.contains("dark");
-    
-    if (lightButton && darkButton) {
-      (lightButton as HTMLElement).style.opacity = isDark ? "0.5" : "1";
-      (darkButton as HTMLElement).style.opacity = isDark ? "1" : "0.5";
-      
-      lightButton.setAttribute("aria-pressed", (!isDark).toString());
-      darkButton.setAttribute("aria-pressed", isDark.toString());
-      
-      lightButton.setAttribute("aria-label", isDark ? "Switch to light theme" : "Currently using light theme");
-      darkButton.setAttribute("aria-label", isDark ? "Currently using dark theme" : "Switch to dark theme");
-    }
+    document.querySelectorAll<HTMLElement>("[data-theme-toggle]").forEach((wrapper) => {
+      const lightButton = wrapper.querySelector<HTMLElement>(".light-theme-button");
+      const darkButton = wrapper.querySelector<HTMLElement>(".dark-theme-button");
+      if (lightButton && darkButton) {
+        lightButton.style.opacity = isDark ? "0.5" : "1";
+        darkButton.style.opacity = isDark ? "1" : "0.5";
+        lightButton.setAttribute("aria-pressed", (!isDark).toString());
+        darkButton.setAttribute("aria-pressed", isDark.toString());
+        lightButton.setAttribute("aria-label", isDark ? "Switch to light theme" : "Currently using light theme");
+        darkButton.setAttribute("aria-label", isDark ? "Currently using dark theme" : "Switch to dark theme");
+      }
+    });
   };
 
   const announce = (message: string) => {
@@ -67,7 +69,7 @@ const { class: className = "" } = Astro.props;
     announce(`Switched to ${theme} theme`);
   };
 
-  const handleKeyDown = (event: KeyboardEvent) => {
+  const handleKeyDown = (event: KeyboardEvent, lightButton: HTMLElement, darkButton: HTMLElement) => {
     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault();
       const currentTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
@@ -80,20 +82,19 @@ const { class: className = "" } = Astro.props;
     }
   };
 
-  lightButton?.addEventListener("click", () => setTheme("light"));
-  darkButton?.addEventListener("click", () => setTheme("dark"));
-  
-  lightButton?.addEventListener("keydown", handleKeyDown);
-  darkButton?.addEventListener("keydown", handleKeyDown);
+  document.querySelectorAll<HTMLElement>("[data-theme-toggle]").forEach((wrapper) => {
+    const lightButton = wrapper.querySelector<HTMLElement>(".light-theme-button");
+    const darkButton = wrapper.querySelector<HTMLElement>(".dark-theme-button");
+    if (!lightButton || !darkButton) return;
+    lightButton.addEventListener("click", () => setTheme("light"));
+    darkButton.addEventListener("click", () => setTheme("dark"));
+    lightButton.addEventListener("keydown", (e) => handleKeyDown(e, lightButton, darkButton));
+    darkButton.addEventListener("keydown", (e) => handleKeyDown(e, lightButton, darkButton));
+  });
 
-  // * Run immediately (scripts are deferred; DOMContentLoaded has already fired by execution time).
   updateThemeButtons();
-
-  // * Re-run after each View Transition so freshly-swapped buttons get correct state.
   document.addEventListener("astro:page-load", updateThemeButtons);
 
-  // * Observe theme class changes and keep button state in sync.
-  //   The observer is disconnected before each navigation to prevent leaks.
   const observer = new MutationObserver(updateThemeButtons);
   observer.observe(document.documentElement, {
     attributes: true,
