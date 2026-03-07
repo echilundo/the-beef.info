@@ -6,11 +6,6 @@ import "@fontsource/lora/latin.css";
 import { ClientRouter } from "astro:transitions";
 import { SITE } from "@consts";
 
-// * Preload LCP fonts to shorten critical request chain (Lighthouse).
-import inter400Url from "@fontsource/inter/files/inter-latin-400-normal.woff2?url";
-import inter600Url from "@fontsource/inter/files/inter-latin-600-normal.woff2?url";
-import lora400Url from "@fontsource/lora/files/lora-latin-400-normal.woff2?url";
-
 interface Props {
   title: string;
   description: string;
@@ -27,11 +22,6 @@ const { title, description, image = "/og-image.png" } = Astro.props;
 <link rel="icon" type="image/svg+xml" href="/favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: light)">
 <link rel="icon" type="image/x-icon" href="/favicon-light.svg">
-<link rel="manifest" href="/manifest.webmanifest" />
-<link rel="apple-touch-icon" href="/favicon-light.svg" />
-<link rel="preload" href={inter400Url} as="font" type="font/woff2" crossorigin />
-<link rel="preload" href={inter600Url} as="font" type="font/woff2" crossorigin />
-<link rel="preload" href={lora400Url} as="font" type="font/woff2" crossorigin />
 <meta name="generator" content={Astro.generator} />
 
 <!-- Canonical URL -->

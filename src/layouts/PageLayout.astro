@@ -12,7 +12,6 @@ import FocusManager from "@components/FocusManager.astro";
 import { SITE } from "@consts";
 
 const { title, description } = Astro.props;
-const selineToken = import.meta.env.PUBLIC_SELINE_TOKEN ?? "";
 ---
 
 <!doctype html>
@@ -24,11 +23,13 @@ const selineToken = import.meta.env.PUBLIC_SELINE_TOKEN ?? "";
     <link rel="preconnect" href="https://cdn.seline.so" />
     <link rel="preconnect" href="https://platform.twitter.com" />
     <link rel="dns-prefetch" href="https://platform.twitter.com" />
-    <link rel="dns-prefetch" href="https://i.ytimg.com" />
 
     <!-- * theme-color tells mobile browsers what color to tint the browser chrome. -->
     <meta name="theme-color" content="#f5f5f4" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: dark)" />
+
+    <!-- Deferred third-party scripts -->
+    <script is:inline async src="https://cdn.seline.so/seline.js" data-token={import.meta.env.PUBLIC_SELINE_TOKEN}></script>
   </head>
   <body class="bg-stone-100 dark:bg-stone-900 text-black dark:text-white">
     <SkipLinks />
@@ -46,28 +47,6 @@ const selineToken = import.meta.env.PUBLIC_SELINE_TOKEN ?? "";
     <LoadingIndicator />
 
     <FocusManager />
-
-    <!-- * Seline loads after paint to avoid competing with FCP/LCP (Lighthouse main-thread). -->
-    <script is:inline define:vars={{ selineToken }}>
-      (function () {
-        function loadSeline() {
-          var s = document.createElement("script");
-          s.src = "https://cdn.seline.so/seline.js";
-          s.async = true;
-          if (selineToken) s.dataset.token = selineToken;
-          document.body.appendChild(s);
-        }
-        if (document.readyState === "complete") {
-          if (window.requestIdleCallback) requestIdleCallback(loadSeline, { timeout: 2000 });
-          else setTimeout(loadSeline, 1);
-        } else {
-          window.addEventListener("load", function () {
-            if (window.requestIdleCallback) requestIdleCallback(loadSeline, { timeout: 2000 });
-            else setTimeout(loadSeline, 1);
-          });
-        }
-      })();
-    </script>
 
     <!-- Optimized Scripts -->
     <script>

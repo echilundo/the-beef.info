@@ -24,7 +24,7 @@ export default defineConfig({
       headers: {
         "/*": {
           "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-          "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=60",
+          "Cache-Control": "public, max-age=0, must-revalidate",
           "X-Content-Type-Options": "nosniff",
           "X-Frame-Options": "DENY",
           "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -71,9 +71,6 @@ export default defineConfig({
             if (id.includes('node_modules')) {
               if (id.includes('astro')) {
                 return 'astro';
-              }
-              if (id.includes('plyr')) {
-                return 'plyr';
               }
               return 'vendor';
             }

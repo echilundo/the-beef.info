@@ -1,13 +1,21 @@
 ---
+import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import Container from "@components/Container.astro";
-import TimelineItem from "@components/TimelineItem.astro";
-import { getWork, getChunkCount, TIMELINE } from "@lib/timeline";
+import { formatDate } from "@lib/utils";
 import { WORK } from "@consts";
 
-const work = await getWork();
-const initialWork = work.slice(0, TIMELINE.INITIAL_COUNT);
-const chunkCount = getChunkCount(work.length);
+// Pre-sort the collection during build time
+const collection = (await getCollection("work"))
+  .sort((a, b) => new Date(a.data.dateStart).valueOf() - new Date(b.data.dateStart).valueOf());
+
+// Process content at build time
+const work = await Promise.all(
+  collection.map(async (item) => {
+    const { Content } = await item.render();
+    return { ...item, Content };
+  })
+);
 ---
 
 <PageLayout title={WORK.TITLE} description={WORK.DESCRIPTION}>
@@ -20,35 +28,40 @@ const chunkCount = getChunkCount(work.length);
         <p class="text-lg font-medium">
           The full timeline of the greatest beef 🥩 saga in hip-hop.
         </p>
-        <p class="text-sm text-gray-600 dark:text-gray-300">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
           All of it below.
         </p>
       </div>
       
-      <ul
-        id="timeline-list"
-        class="flex flex-col space-y-12"
+      <ul 
+        class="flex flex-col space-y-12" 
         aria-label="Timeline of events"
       >
-        {initialWork.map((entry, index) => (
-          <TimelineItem
-            entry={entry}
-            showHr={index !== initialWork.length - 1 || work.length > TIMELINE.INITIAL_COUNT}
-          />
+        {work.map((entry, index) => (
+          <li class="timeline-item opacity-0">
+            <time 
+              datetime={new Date(entry.data.dateStart).toISOString()}
+              class="text-sm text-gray-600 dark:text-gray-400"
+            >
+              {formatDate(new Date(entry.data.dateStart))}
+            </time>
+            <div class="font-semibold text-black dark:text-white">
+              {entry.data.company}
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+              {entry.data.role}
+            </div>
+            <article 
+              class="mb-8 content-visibility-auto contain-intrinsic-size-[0_500px]"
+            >
+              <entry.Content />
+            </article>
+            {index !== work.length - 1 && (
+              <hr class="mt-14 border-t border-gray-300 dark:border-gray-700" aria-hidden="true" />
+            )}
+          </li>
         ))}
       </ul>
-      {chunkCount > 0 && (
-        <div class="mt-10 flex justify-center" id="timeline-load-more-wrap">
-          <button
-            type="button"
-            id="timeline-load-more"
-            class="rounded bg-stone-200 px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-300 dark:bg-stone-700 dark:text-stone-200 dark:hover:bg-stone-600"
-            data-chunk-count={chunkCount}
-          >
-            Load more
-          </button>
-        </div>
-      )}
     </div>
   </Container>
 </PageLayout>
@@ -77,13 +90,14 @@ const chunkCount = getChunkCount(work.length);
 </style>
 
 <script>
+  // Use requestIdleCallback for non-critical initialization
   const initTimeline = () => {
     const items = document.querySelectorAll(".timeline-item");
     if (!items.length) return;
 
     const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add("visible");
             io.unobserve(entry.target);
@@ -93,54 +107,16 @@ const chunkCount = getChunkCount(work.length);
       { rootMargin: "50px" }
     );
 
-    items.forEach((item) => io.observe(item));
+    items.forEach(item => io.observe(item));
   };
 
-  const initLoadMore = () => {
-    const btn = document.getElementById("timeline-load-more") as HTMLButtonElement | null;
-    const list = document.getElementById("timeline-list");
-    const wrap = document.getElementById("timeline-load-more-wrap");
-    if (!btn || !list || !wrap) return;
-
-    let nextChunk = 1;
-    const chunkCount = Number(btn.dataset.chunkCount) || 0;
-
-    btn.addEventListener("click", async () => {
-      if (nextChunk > chunkCount) return;
-      btn.disabled = true;
-      btn.textContent = "Loading…";
-      try {
-        const res = await fetch(`/timeline-chunk/${nextChunk}`);
-        const html = await res.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const nodes = doc.body.querySelectorAll("li");
-        nodes.forEach((node) => list.appendChild(node.cloneNode(true)));
-        nextChunk += 1;
-        if (nextChunk > chunkCount) {
-          wrap.remove();
-        } else {
-          btn.disabled = false;
-          btn.textContent = "Load more";
-        }
-        initTimeline();
-      } catch {
-        btn.disabled = false;
-        btn.textContent = "Load more";
-      }
-    });
-  };
-
+  // Initialize on page load
   if ("requestIdleCallback" in window) {
-    requestIdleCallback(initTimeline, { timeout: 500 });
-    requestIdleCallback(initLoadMore, { timeout: 500 });
+    requestIdleCallback(initTimeline);
   } else {
     setTimeout(initTimeline, 1);
-    setTimeout(initLoadMore, 1);
   }
 
-  document.addEventListener("astro:after-swap", () => {
-    initTimeline();
-    initLoadMore();
-  });
+  // Re-initialize after Astro page transitions
+  document.addEventListener("astro:after-swap", initTimeline);
 </script>

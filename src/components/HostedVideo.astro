@@ -17,54 +17,28 @@ const { src, title = "Embedded video" } = Astro.props;
   </video>
 </div>
 
-<!-- * Progress/seek input meets 44×44px tap target (Lighthouse tap-targets). -->
-<style>
-  .hosted-video .plyr__progress__container {
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-  }
-  .hosted-video .plyr__progress input[type="range"] {
-    min-height: 44px;
-    padding: 12px 0;
-    box-sizing: content-box;
-  }
-</style>
-
 <script>
+  import Plyr from "plyr";
+
   const initHostedVideos = () => {
-    const videos = document.querySelectorAll<HTMLVideoElement>(".js-hosted-video");
-    if (!videos.length) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          const video = entry.target as HTMLVideoElement;
-          if (video.dataset.plyrInitialized === "true") return;
-          observer.unobserve(video);
-          video.dataset.plyrInitialized = "true";
-          import("plyr").then(({ default: Plyr }) => {
-            new Plyr(video, {
-              controls: [
-                "play-large",
-                "play",
-                "progress",
-                "current-time",
-                "mute",
-                "volume",
-                "settings",
-                "pip",
-                "fullscreen"
-              ],
-            });
-          });
-        });
-      },
-      { rootMargin: "100px" }
-    );
-
-    videos.forEach((v) => observer.observe(v));
+    document.querySelectorAll<HTMLVideoElement>(".js-hosted-video").forEach((video) => {
+      if (video.dataset.plyrInitialized === "true") return;
+      // * Mark element before init so repeated page-load events do not double-bind.
+      video.dataset.plyrInitialized = "true";
+      new Plyr(video, {
+        controls: [
+          "play-large",
+          "play",
+          "progress",
+          "current-time",
+          "mute",
+          "volume",
+          "settings",
+          "pip",
+          "fullscreen"
+        ],
+      });
+    });
   };
 
   initHostedVideos();
