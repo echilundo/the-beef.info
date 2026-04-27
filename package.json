@@ -30,7 +30,7 @@
     "astro": "^5.18.0",
     "astro-embed": "^0.12.0",
     "clsx": "^2.1.0",
-    "devalue": "^5.6.2",
+    "devalue": "^5.6.4",
     "eslint": "^8.57.0",
     "eslint-plugin-astro": "^0.32.0",
     "eslint-plugin-jsx-a11y": "^6.8.0",
