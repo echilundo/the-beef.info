@@ -32,6 +32,7 @@ echo "========================================"
 
 run_step "TypeScript / Astro check"  npx astro check
 run_step "ESLint"                    npx eslint .
+run_step "Circular dependency check" npm run check:cycles
 
 echo ""
 echo "========================================"

@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "start": "astro dev",
+    "check:cycles": "node scripts/check-circular-deps.mjs",
     "agent-check": "bash scripts/ci-check.sh"
   },
   "dependencies": {
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@types/unist": "^3.0.3",
+    "madge": "^8.0.0",
     "terser": "^5.39.0"
   },
   "overrides": {

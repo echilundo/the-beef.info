@@ -16,7 +16,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const { title, description, image = "/og-image.png" } = Astro.props;
 ---
 
-<!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/favicon-dark.svg" media="(prefers-color-scheme: dark)">
@@ -24,15 +23,12 @@ const { title, description, image = "/og-image.png" } = Astro.props;
 <link rel="icon" type="image/x-icon" href="/favicon-light.svg">
 <meta name="generator" content={Astro.generator} />
 
-<!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
 
-<!-- Primary Meta Tags -->
 <title>{title}</title>
 <meta name="title" content={title} />
 <meta name="description" content={description} />
 
-<!-- Open Graph / Facebook -->
 <meta property="og:type" content="website" />
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
@@ -41,14 +37,12 @@ const { title, description, image = "/og-image.png" } = Astro.props;
 <meta property="og:locale" content="en_US" />
 <meta property="og:site_name" content={SITE.NAME} />
 
-<!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
 
-<!-- JSON-LD Structured Data -->
 <script is:inline type="application/ld+json" set:html={JSON.stringify({
   "@context": "https://schema.org",
   "@type": "WebSite",
@@ -62,10 +56,8 @@ const { title, description, image = "/og-image.png" } = Astro.props;
   }
 })} />
 
-<!-- View Transitions -->
 <ClientRouter />
 
-<!-- Critical CSS -->
 <style is:inline>
   :root {
     color-scheme: light;
@@ -85,16 +77,13 @@ const { title, description, image = "/og-image.png" } = Astro.props;
   }
 </style>
 
-<!-- Critical JS -->
 <script is:inline>
-  // Minimal theme initialization - runs immediately
   (function() {
     const theme = localStorage.theme === "dark" || (!localStorage.theme && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
     document.documentElement.classList[theme === "dark" ? "add" : "remove"]("dark");
     document.documentElement.style.setProperty("--initial-theme", `'${theme}'`);
   })();
 
-  // Font loading optimization
   (function() {
     // * 3 s timeout ensures the page is never permanently invisible if fonts fail.
     const revealPage = function() {
@@ -118,18 +107,9 @@ const { title, description, image = "/og-image.png" } = Astro.props;
   })();
 </script>
 
-<!-- Deferred JS -->
 <script>
-  // Use requestIdleCallback for non-critical operations
-  const scheduleIdleTask = (callback: () => void) => {
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(callback, { timeout: 1000 });
-    } else {
-      setTimeout(callback, 1);
-    }
-  };
+  import { scheduleIdleTask } from "../scripts/browser-utils.js";
 
-  // Theme handling - deferred
   scheduleIdleTask(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleThemeChange = (e: MediaQueryListEvent) => {
@@ -143,7 +123,6 @@ const { title, description, image = "/og-image.png" } = Astro.props;
     mediaQuery.addEventListener("change", handleThemeChange);
   });
 
-  // Scroll handling - optimized with ResizeObserver
   scheduleIdleTask(() => {
     let ticking = false;
     // * Offset of 0 means the "scrolled" class (which shows back-to-top) activates immediately on any scroll.

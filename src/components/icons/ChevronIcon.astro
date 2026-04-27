@@ -1,0 +1,21 @@
+---
+interface Props {
+  direction?: "up" | "down";
+  class?: string;
+}
+
+const { direction = "up", class: className = "size-5" } = Astro.props;
+const points = direction === "down" ? "6 9 12 15 18 9" : "18 15 12 9 6 15";
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  aria-hidden="true"
+  class={className}
+  stroke-width="2"
+>
+  <polyline points={points}></polyline>
+</svg>

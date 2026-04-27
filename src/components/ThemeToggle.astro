@@ -10,7 +10,6 @@ const { class: className = "" } = Astro.props;
 ---
 
 <div class={`flex flex-wrap gap-1 items-center ${className}`} role="group" aria-label="Theme selection">
-  <!-- Light Theme Button -->
   <button
     id="light-theme-button"
     aria-label="Switch to light theme"
@@ -21,7 +20,6 @@ const { class: className = "" } = Astro.props;
     <SunIcon />
   </button>
   
-  <!-- Dark Theme Button -->
   <button
     id="dark-theme-button"
     aria-label="Switch to dark theme"
@@ -34,7 +32,6 @@ const { class: className = "" } = Astro.props;
 </div>
 
 <script>
-  // Theme toggle functionality with enhanced accessibility
   const lightButton = document.getElementById("light-theme-button");
   const darkButton = document.getElementById("dark-theme-button");
 
@@ -54,7 +51,7 @@ const { class: className = "" } = Astro.props;
   };
 
   const announce = (message: string) => {
-    const fm = (window as unknown as Record<string, unknown>).focusManager as { announce?: (msg: string) => void } | undefined;
+    const fm = window.focusManager;
     if (fm?.announce) {
       fm.announce(message);
     }

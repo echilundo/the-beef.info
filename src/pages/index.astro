@@ -90,7 +90,8 @@ const work = await Promise.all(
 </style>
 
 <script>
-  // Use requestIdleCallback for non-critical initialization
+  import { scheduleIdleTask } from "../scripts/browser-utils.js";
+
   const initTimeline = () => {
     const items = document.querySelectorAll(".timeline-item");
     if (!items.length) return;
@@ -110,13 +111,8 @@ const work = await Promise.all(
     items.forEach(item => io.observe(item));
   };
 
-  // Initialize on page load
-  if ("requestIdleCallback" in window) {
-    requestIdleCallback(initTimeline);
-  } else {
-    setTimeout(initTimeline, 1);
-  }
-
-  // Re-initialize after Astro page transitions
-  document.addEventListener("astro:after-swap", initTimeline);
+  // * Use one event path for both first load and View Transition navigations.
+  document.addEventListener("astro:page-load", () => {
+    scheduleIdleTask(initTimeline);
+  });
 </script>

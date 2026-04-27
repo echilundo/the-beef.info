@@ -19,7 +19,6 @@ const { title, description } = Astro.props;
   <head>
     <Head title={`${title} | ${SITE.NAME}`} description={description} />
 
-    <!-- Resource hints for better performance -->
     <link rel="preconnect" href="https://cdn.seline.so" />
     <link rel="preconnect" href="https://platform.twitter.com" />
     <link rel="dns-prefetch" href="https://platform.twitter.com" />
@@ -28,7 +27,6 @@ const { title, description } = Astro.props;
     <meta name="theme-color" content="#f5f5f4" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: dark)" />
 
-    <!-- Deferred third-party scripts -->
     <script is:inline async src="https://cdn.seline.so/seline.js" data-token={import.meta.env.PUBLIC_SELINE_TOKEN}></script>
   </head>
   <body class="bg-stone-100 dark:bg-stone-900 text-black dark:text-white">
@@ -48,7 +46,6 @@ const { title, description } = Astro.props;
 
     <FocusManager />
 
-    <!-- Optimized Scripts -->
     <script>
       import "/src/scripts/page-layout.js";
     </script>

@@ -1,13 +1,14 @@
 import rss from "@astrojs/rss";
 import { getCollection } from "astro:content";
+import type { APIRoute } from "astro";
 import { HOME } from "@consts";
-
-type Context = {
-  site: string
-};
-
-export async function GET(context: Context) {
+export const GET: APIRoute = async ({ site }) => {
   const workItems = await getCollection("work");
+  const siteUrl = site ?? import.meta.env.SITE;
+
+  if (!siteUrl) {
+    throw new Error("RSS generation requires `site` or `SITE` to be configured.");
+  }
 
   const items = workItems
     .sort((a, b) => new Date(a.data.dateStart).valueOf() - new Date(b.data.dateStart).valueOf())
@@ -21,7 +22,7 @@ export async function GET(context: Context) {
   return rss({
     title: HOME.TITLE,
     description: HOME.DESCRIPTION,
-    site: context.site,
+    site: siteUrl,
     items,
   });
-}
+};

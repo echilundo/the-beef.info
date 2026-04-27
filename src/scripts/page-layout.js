@@ -1,6 +1,12 @@
+import { scheduleIdleTask } from "./browser-utils.js";
+
 // Error handling
 const ErrorHandler = {
+  initialized: false,
   init() {
+    if (this.initialized) return;
+    this.initialized = true;
+
     window.addEventListener("error", (event) => {
       console.error("Global error:", event.error);
       const errorBoundary = document.getElementById("error-boundary");
@@ -18,46 +24,49 @@ const ErrorHandler = {
 
 // Loading indicator
 const LoadingIndicator = {
+  initialized: false,
   init() {
-    const indicator = document.getElementById("loading-indicator");
-    const statusText = document.getElementById("loading-indicator-text");
-    if (!indicator) return;
+    if (this.initialized) return;
+    this.initialized = true;
 
     // * astro:before-preparation fires when a navigation begins (show the bar).
     document.addEventListener("astro:before-preparation", () => {
+      const indicator = document.getElementById("loading-indicator");
+      const statusText = document.getElementById("loading-indicator-text");
+      if (!indicator) return;
       indicator.classList.remove("scale-x-0");
       if (statusText) statusText.textContent = "Loading page…";
     });
 
     // * astro:page-load fires when the incoming page is fully ready (hide the bar).
     document.addEventListener("astro:page-load", () => {
+      const indicator = document.getElementById("loading-indicator");
+      const statusText = document.getElementById("loading-indicator-text");
+      if (!indicator) return;
       indicator.classList.add("scale-x-0");
       if (statusText) statusText.textContent = "";
     });
   }
 };
 
-// Use requestIdleCallback for non-critical operations
-const scheduleIdleTask = (callback) => {
-  if ("requestIdleCallback" in window) {
-    requestIdleCallback(callback, { timeout: 1000 });
-  } else {
-    setTimeout(callback, 1);
-  }
-};
-
 // Optimized scroll handling with RAF
 const ScrollHandler = {
+  initialized: false,
   init() {
-    const backToTopButton = document.getElementById("backToTop");
-    const lastUpdateButton = document.getElementById("lastUpdate");
-
-    if (!backToTopButton || !lastUpdateButton) return;
+    if (this.initialized) return;
+    this.initialized = true;
 
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
+          const backToTopButton = document.getElementById("backToTop");
+          const lastUpdateButton = document.getElementById("lastUpdate");
+          if (!backToTopButton || !lastUpdateButton) {
+            ticking = false;
+            return;
+          }
+
           const scrollY = window.scrollY;
           const viewportHeight = window.innerHeight;
           const documentHeight = document.documentElement.scrollHeight;
@@ -77,27 +86,37 @@ const ScrollHandler = {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    backToTopButton.addEventListener("click", () => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
 
-    lastUpdateButton.addEventListener("click", () => {
-      window.scrollTo({ 
-        top: document.documentElement.scrollHeight,
-        behavior: "smooth"
-      });
+      const backToTopButton = target.closest("#backToTop");
+      if (backToTopButton) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const lastUpdateButton = target.closest("#lastUpdate");
+      if (lastUpdateButton) {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: "smooth"
+        });
+      }
     });
 
     handleScroll();
   }
 };
 
-// * astro:page-load fires after every navigation (hard load + soft View Transition),
-//   so re-initializing here ensures event listeners are attached to the fresh DOM.
+let bootstrapComplete = false;
 document.addEventListener("astro:page-load", () => {
+  if (bootstrapComplete) return;
+  bootstrapComplete = true;
+
   ErrorHandler.init();
   LoadingIndicator.init();
-  
+
   scheduleIdleTask(() => {
     ScrollHandler.init();
   });
